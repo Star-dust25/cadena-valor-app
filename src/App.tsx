@@ -1,122 +1,172 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React from 'react';
+import { Toaster } from 'sonner';
+import { Navbar } from './components/ui/Navbar';
+import { ValueChainScene } from './components/canvas/ValueChainScene';
+import { PorterMatrix2D } from './components/ui/PorterMatrix2D';
+import { ActivityDetailDrawer } from './components/ui/ActivityDetailDrawer';
+import { AnalyticsDashboard } from './components/charts/AnalyticsDashboard';
+import { ExecutiveSummaryModal } from './components/ui/ExecutiveSummaryModal';
+import { useValueChainStore } from './store/useValueChainStore';
 
-function App() {
-  const [count, setCount] = useState(0)
+export const App: React.FC = () => {
+  const viewMode = useValueChainStore((s) => s.viewMode);
+  const getActiveSectorData = useValueChainStore((s) => s.getActiveSectorData);
+
+  const sector = getActiveSectorData();
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-[#050508] text-[#F2F5F8] flex flex-col font-sans selection:bg-[#1D63FF]/30 selection:text-[#8AB8FF]">
+      {/* Toast Notifications */}
+      <Toaster
+        position="bottom-right"
+        theme="dark"
+        richColors
+        closeButton
+        toastOptions={{
+          style: {
+            background: '#0D1322',
+            border: '1px solid #2C374B',
+            color: '#F2F5F8',
+            fontFamily: 'Inter, sans-serif',
+          },
+        }}
+      />
 
-      <div className="ticks"></div>
+      {/* Top Navbar */}
+      <Navbar />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        {/* Sector Briefing Banner */}
+        <div className="relative p-6 rounded-2xl bg-gradient-to-r from-[#0D1322] via-[#1B2436]/90 to-[#0D1322] border border-[#2C374B] shadow-2xl overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#1D63FF]/15 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#1D63FF] animate-pulse" />
+                <span className="text-xs font-mono font-bold text-[#8AB8FF] uppercase tracking-wider">
+                  {sector.badge}
+                </span>
+                <span className="text-xs font-mono text-[#8FA0B5]">
+                  • Modelo Sistémico Unificado
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#F2F5F8]">
+                {sector.title}
+              </h2>
+              <p className="text-xs sm:text-sm text-[#C5D0DE] mt-1.5 max-w-3xl leading-relaxed">
+                {sector.tagline}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+              <div className="p-3 rounded-xl bg-[#050508]/60 border border-[#2C374B] text-right">
+                <span className="text-[10px] font-mono text-[#8FA0B5] block">Meta Estratégica GSTI</span>
+                <span className="text-xs font-mono font-bold text-[#10B981]">
+                  {sector.id === 'ai' ? 'ROI +34.8% en Inferencia' : 'MTTR < 7 min con SOAR'}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+
+        {/* VIEW MODE: HYBRID (Default: 3D Scene + Matrix + Dashboard) */}
+        {viewMode === 'hybrid' && (
+          <div className="space-y-8">
+            {/* 3D Scene Section */}
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#1D63FF]" />
+                  <h3 className="text-sm font-mono font-bold tracking-wider uppercase text-[#8FA0B5]">
+                    Escenario 3D Interactivo de la Cadena de Valor
+                  </h3>
+                </div>
+                <span className="text-[11px] font-mono text-[#8FA0B5]">
+                  Órbita 360° • Clic en nodo para simular
+                </span>
+              </div>
+
+              <div className="h-[480px] lg:h-[560px]">
+                <ValueChainScene />
+              </div>
+            </section>
+
+            {/* 2D Porter Matrix & Systemic Archetype Section */}
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#387BFF]" />
+                <h3 className="text-sm font-mono font-bold tracking-wider uppercase text-[#8FA0B5]">
+                  Matriz Porter Integrada con ITIL 4 & Dinámica Sistémica
+                </h3>
+              </div>
+              <PorterMatrix2D />
+            </section>
+
+            {/* Real-Time Analytics & Projection Section */}
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+                <h3 className="text-sm font-mono font-bold tracking-wider uppercase text-[#8FA0B5]">
+                  Dashboard de Métricas, Benchmarking & Simulación en Vivo
+                </h3>
+              </div>
+              <AnalyticsDashboard />
+            </section>
+          </div>
+        )}
+
+        {/* VIEW MODE: 3D IMMERSIVE ONLY */}
+        {viewMode === '3d' && (
+          <div className="space-y-6">
+            <div className="h-[75vh] min-h-[550px]">
+              <ValueChainScene />
+            </div>
+            {/* Quick KPI Strip underneath */}
+            <AnalyticsDashboard />
+          </div>
+        )}
+
+        {/* VIEW MODE: CLASSIC MATRIX + ITIL 4 ONLY */}
+        {viewMode === 'matrix' && (
+          <div className="space-y-8">
+            <PorterMatrix2D />
+            <AnalyticsDashboard />
+          </div>
+        )}
+      </main>
+
+      {/* Slide-out Activity Details Drawer & Interactive Simulator */}
+      <ActivityDetailDrawer />
+
+      {/* Academic Executive Summary Report Modal */}
+      <ExecutiveSummaryModal />
+
+      {/* Footer */}
+      <footer className="mt-16 border-t border-[#8FA0B5]/15 bg-[#050508] py-8 text-xs text-[#8FA0B5]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 font-mono">
+            <span className="text-[#8AB8FF] font-bold">GSTI</span>
+            <span>•</span>
+            <span>Gestión del Servicio de TI</span>
+            <span>•</span>
+            <span>Caso Práctico 02</span>
+          </div>
+
+          <div className="text-center font-mono text-[11px] text-[#8FA0B5]/80">
+            Cadena de Valor Michael Porter • ITIL v4 Service Value Chain • Dinámica de Sistemas Peter Senge
+          </div>
+
+          <div className="flex items-center gap-4 font-mono text-[11px]">
+            <span className="text-[#1D63FF]">React 19 + Three.js</span>
+            <span className="text-[#387BFF]">Zustand</span>
+            <span className="text-[#8AB8FF]">Recharts</span>
+          </div>
         </div>
-      </section>
+      </footer>
+    </div>
+  );
+};
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
-
-export default App
+export default App;
