@@ -10,16 +10,18 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useValueChainStore } from '../../store/useValueChainStore';
+import {
+  useValueChainStore,
+  useActiveSectorData,
+  useSimulationResult,
+} from '../../store/useValueChainStore';
 
 export const ExecutiveSummaryModal: React.FC = () => {
   const isSummaryModalOpen = useValueChainStore((s) => s.isSummaryModalOpen);
   const setIsSummaryModalOpen = useValueChainStore((s) => s.setIsSummaryModalOpen);
-  const getActiveSectorData = useValueChainStore((s) => s.getActiveSectorData);
-  const calculateSimulationResult = useValueChainStore((s) => s.calculateSimulationResult);
 
-  const sector = getActiveSectorData();
-  const sim = calculateSimulationResult();
+  const sector = useActiveSectorData();
+  const sim = useSimulationResult();
 
   if (!isSummaryModalOpen) return null;
 

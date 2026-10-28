@@ -21,14 +21,11 @@ import {
   Zap,
   ShieldAlert,
 } from 'lucide-react';
-import { useValueChainStore } from '../../store/useValueChainStore';
+import { useActiveSectorData, useSimulationResult } from '../../store/useValueChainStore';
 
 export const AnalyticsDashboard: React.FC = () => {
-  const getActiveSectorData = useValueChainStore((s) => s.getActiveSectorData);
-  const calculateSimulationResult = useValueChainStore((s) => s.calculateSimulationResult);
-
-  const sector = getActiveSectorData();
-  const simResult = calculateSimulationResult();
+  const sector = useActiveSectorData();
+  const simResult = useSimulationResult();
 
   // Radar Data: 5 Primary Activities Maturity vs Benchmark
   const radarData = useMemo(() => {
@@ -177,7 +174,7 @@ export const AnalyticsDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="h-64 sm:h-72 w-full">
+          <div className="h-64 sm:h-72 w-full min-h-[260px] min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={timelineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
@@ -249,7 +246,7 @@ export const AnalyticsDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="h-64 sm:h-72 w-full">
+          <div className="h-64 sm:h-72 w-full min-h-[260px] min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData} outerRadius="75%">
                 <PolarGrid stroke="#2C374B" strokeOpacity={0.6} />
@@ -301,7 +298,7 @@ export const AnalyticsDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="h-64 sm:h-72 w-full">
+        <div className="h-64 sm:h-72 w-full min-h-[260px] min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={barData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#2C374B" opacity={0.3} />

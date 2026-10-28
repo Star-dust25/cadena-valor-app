@@ -6,13 +6,12 @@ import { PorterMatrix2D } from './components/ui/PorterMatrix2D';
 import { ActivityDetailDrawer } from './components/ui/ActivityDetailDrawer';
 import { AnalyticsDashboard } from './components/charts/AnalyticsDashboard';
 import { ExecutiveSummaryModal } from './components/ui/ExecutiveSummaryModal';
-import { useValueChainStore } from './store/useValueChainStore';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { useValueChainStore, useActiveSectorData } from './store/useValueChainStore';
 
 export const App: React.FC = () => {
   const viewMode = useValueChainStore((s) => s.viewMode);
-  const getActiveSectorData = useValueChainStore((s) => s.getActiveSectorData);
-
-  const sector = getActiveSectorData();
+  const sector = useActiveSectorData();
 
   return (
     <div className="min-h-screen bg-[#050508] text-[#F2F5F8] flex flex-col font-sans selection:bg-[#1D63FF]/30 selection:text-[#8AB8FF]">
@@ -89,7 +88,9 @@ export const App: React.FC = () => {
               </div>
 
               <div className="h-[480px] lg:h-[560px]">
-                <ValueChainScene />
+                <ErrorBoundary fallbackTitle="Error al cargar el Escenario 3D">
+                  <ValueChainScene />
+                </ErrorBoundary>
               </div>
             </section>
 
@@ -101,7 +102,9 @@ export const App: React.FC = () => {
                   Matriz Porter Integrada con ITIL 4 & Dinámica Sistémica
                 </h3>
               </div>
-              <PorterMatrix2D />
+              <ErrorBoundary fallbackTitle="Error al cargar la Matriz de Porter">
+                <PorterMatrix2D />
+              </ErrorBoundary>
             </section>
 
             {/* Real-Time Analytics & Projection Section */}
@@ -112,7 +115,9 @@ export const App: React.FC = () => {
                   Dashboard de Métricas, Benchmarking & Simulación en Vivo
                 </h3>
               </div>
-              <AnalyticsDashboard />
+              <ErrorBoundary fallbackTitle="Error al cargar el Dashboard de Analítica">
+                <AnalyticsDashboard />
+              </ErrorBoundary>
             </section>
           </div>
         )}
@@ -121,18 +126,26 @@ export const App: React.FC = () => {
         {viewMode === '3d' && (
           <div className="space-y-6">
             <div className="h-[75vh] min-h-[550px]">
-              <ValueChainScene />
+              <ErrorBoundary fallbackTitle="Error al cargar el Escenario 3D">
+                <ValueChainScene />
+              </ErrorBoundary>
             </div>
             {/* Quick KPI Strip underneath */}
-            <AnalyticsDashboard />
+            <ErrorBoundary fallbackTitle="Error al cargar el Dashboard de Analítica">
+              <AnalyticsDashboard />
+            </ErrorBoundary>
           </div>
         )}
 
         {/* VIEW MODE: CLASSIC MATRIX + ITIL 4 ONLY */}
         {viewMode === 'matrix' && (
           <div className="space-y-8">
-            <PorterMatrix2D />
-            <AnalyticsDashboard />
+            <ErrorBoundary fallbackTitle="Error al cargar la Matriz de Porter">
+              <PorterMatrix2D />
+            </ErrorBoundary>
+            <ErrorBoundary fallbackTitle="Error al cargar el Dashboard de Analítica">
+              <AnalyticsDashboard />
+            </ErrorBoundary>
           </div>
         )}
       </main>

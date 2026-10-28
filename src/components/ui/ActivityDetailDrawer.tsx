@@ -15,50 +15,54 @@ import {
   Workflow,
   Sparkles,
 } from 'lucide-react';
-import { useValueChainStore } from '../../store/useValueChainStore';
+import {
+  useValueChainStore,
+  useActiveSectorData,
+  useSelectedActivity,
+} from '../../store/useValueChainStore';
 
 export const ActivityDetailDrawer: React.FC = () => {
   const selectActivity = useValueChainStore((s) => s.selectActivity);
-  const getSelectedActivity = useValueChainStore((s) => s.getSelectedActivity);
   const updateActivityMetrics = useValueChainStore((s) => s.updateActivityMetrics);
-  const getActiveSectorData = useValueChainStore((s) => s.getActiveSectorData);
 
   const [activeTab, setActiveTab] = useState<'details' | 'systemic' | 'simulator'>('simulator');
 
-  const activity = getSelectedActivity();
-  const sector = getActiveSectorData();
-
-  if (!activity) return null;
+  const activity = useSelectedActivity();
+  const sector = useActiveSectorData();
 
   const isBottleneck =
-    activity.systemicRole.bottleneckRisk === 'critical' ||
-    activity.metrics.budgetUSD < activity.defaultMetrics.budgetUSD * 0.6 ||
-    activity.metrics.automationPct < 50;
+    activity &&
+    (activity.systemicRole.bottleneckRisk === 'critical' ||
+      activity.metrics.budgetUSD < activity.defaultMetrics.budgetUSD * 0.6 ||
+      activity.metrics.automationPct < 50);
 
   // Handler for simulator inputs
   const handleBudgetChange = (value: number) => {
-    updateActivityMetrics(activity.id, { budgetUSD: value });
+    if (activity) updateActivityMetrics(activity.id, { budgetUSD: value });
   };
 
   const handleAutomationChange = (value: number) => {
-    updateActivityMetrics(activity.id, { automationPct: value });
+    if (activity) updateActivityMetrics(activity.id, { automationPct: value });
   };
 
   const handleSlaChange = (value: number) => {
-    updateActivityMetrics(activity.id, { slaPct: value });
+    if (activity) updateActivityMetrics(activity.id, { slaPct: value });
   };
 
   const handleResetNodeMetrics = () => {
-    updateActivityMetrics(activity.id, {
-      budgetUSD: activity.defaultMetrics.budgetUSD,
-      automationPct: activity.defaultMetrics.automationPct,
-      slaPct: activity.defaultMetrics.slaPct,
-    });
+    if (activity) {
+      updateActivityMetrics(activity.id, {
+        budgetUSD: activity.defaultMetrics.budgetUSD,
+        automationPct: activity.defaultMetrics.automationPct,
+        slaPct: activity.defaultMetrics.slaPct,
+      });
+    }
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 overflow-hidden pointer-events-none">
+      {activity && (
+        <div className="fixed inset-0 z-[70] overflow-hidden pointer-events-none">
         {/* Backdrop for mobile or focusing */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -534,6 +538,7 @@ export const ActivityDetailDrawer: React.FC = () => {
           </motion.div>
         </div>
       </div>
+      )}
     </AnimatePresence>
   );
 };

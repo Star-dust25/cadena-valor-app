@@ -109,7 +109,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Desviación Presupuesto FinOps', value: '-3.2%', target: '<5%', trend: 'down', status: 'optimal' },
           { name: 'Índice de Explicabilidad', value: '4.6/5', target: '4.5', trend: 'up', status: 'optimal' },
         ],
-        position3D: [-5.0, 2.2, -2.0],
+        position3D: [-0.6, 3.8, 0],
+        subChips: ["Gobierno Ético (ISO 42001)","FinOps Multi-Cloud","Comités de Sesgo","Soberanía de Datos"],
         imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['ai_procurement', 'ai_operations', 'ai_margin'],
@@ -164,7 +165,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Tiempo de Onboarding MLOps', value: '18 días', target: '<25 días', trend: 'down', status: 'optimal' },
           { name: 'Patentes / Publicaciones', value: '14 / año', target: '10', trend: 'up', status: 'optimal' },
         ],
-        position3D: [-1.7, 2.2, -2.0],
+        position3D: [-0.6, 2.4, 0],
+        subChips: ["Atracción AI Researchers","Prompt Engineering","Capacitación MLOps","Carrera Técnica Dual"],
         imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['ai_tech', 'ai_operations'],
@@ -218,7 +220,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Velocidad de Inferencia (Tokens/s)', value: '185 tok/s', target: '>150', trend: 'up', status: 'optimal' },
           { name: 'Tasa de Acierto Semántico', value: '94.2%', target: '92%', trend: 'up', status: 'optimal' },
         ],
-        position3D: [1.7, 2.2, -2.0],
+        position3D: [-0.6, 1, 0],
+        subChips: ["I+D Transformers & SLM","RAG Híbrido Avanzado","Kernels FlashAttention","Agentes Autónomos XAI"],
         imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['ai_operations', 'ai_outbound', 'ai_margin'],
@@ -273,7 +276,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Ahorro por Reservas Dinámicas', value: '38%', target: '>30%', trend: 'up', status: 'optimal' },
           { name: 'Costo por Token Ingerido', value: '$0.00018', target: '<$0.00025', trend: 'down', status: 'optimal' },
         ],
-        position3D: [5.0, 2.2, -2.0],
+        position3D: [-0.6, -0.4, 0],
+        subChips: ["Clústeres GPU H100/B200","Cloud Instances Reservadas","Datasets Premium Curados","InfiniBand SLAs"],
         imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['ai_operations', 'ai_outbound'],
@@ -330,7 +334,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Tasa de Datos Corruptos Detectados', value: '0.04%', target: '<0.1%', trend: 'down', status: 'optimal' },
           { name: 'Latencia Ingesta a Almacén', value: '42s', target: '<60s', trend: 'down', status: 'optimal' },
         ],
-        position3D: [-5.5, -0.8, 0.5],
+        position3D: [-5, -2.6, 0],
+        subChips: ["Ingesta Streaming Kafka","Sanitización PII Presidio","Deduplicación MinHash","Versionado DVC"],
         imageUrl: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['ai_operations'],
@@ -385,7 +390,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Puntaje Benchmark General (MMLU)', value: '87.6', target: '>85', trend: 'up', status: 'optimal' },
           { name: 'Tasa de Fallos en Checkpoints', value: '0.8%', target: '<2%', trend: 'down', status: 'optimal' },
         ],
-        position3D: [-2.75, -0.8, 0.5],
+        position3D: [-2.8, -2.6, 0],
+        subChips: ["Entrenamiento PyTorch Slurm","Fine-Tuning LoRA/QLoRA","Alineación DPO / RLHF","Registry Inmutable MLflow"],
         imageUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['ai_outbound', 'ai_margin'],
@@ -440,7 +446,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Disponibilidad API Global', value: '99.98%', target: '99.95%', trend: 'up', status: 'optimal' },
           { name: 'RPS (Requests Per Second)', value: '12,400', target: '>10,000', trend: 'up', status: 'optimal' },
         ],
-        position3D: [0.0, -0.8, 0.5],
+        position3D: [-0.6, -2.6, 0],
+        subChips: ["Serving vLLM / Triton","Caché Semántica Redis","Empaquetado TensorRT/Edge","APIs Gateway gRPC"],
         imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['ai_marketing', 'ai_service', 'ai_margin'],
@@ -495,7 +502,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Ciclo Medio de Cierre de Venta', value: '28 días', target: '<35 días', trend: 'down', status: 'optimal' },
           { name: 'CAC Payback Period', value: '4.8 meses', target: '<6 meses', trend: 'down', status: 'optimal' },
         ],
-        position3D: [2.75, -0.8, 0.5],
+        position3D: [1.6, -2.6, 0],
+        subChips: ["PoCs en 72 Horas","Pricing por Token","Playgrounds Interactivos","Whitepapers & Benchmarks"],
         imageUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['ai_margin', 'ai_service'],
@@ -549,7 +557,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Tasa de Satisfacción CSAT', value: '96.8%', target: '>92%', trend: 'up', status: 'optimal' },
           { name: 'Cumplimiento de SLAs de Inferencia', value: '99.96%', target: '99.9%', trend: 'up', status: 'optimal' },
         ],
-        position3D: [5.5, -0.8, 0.5],
+        position3D: [3.8, -2.6, 0],
+        subChips: ["Monitoreo Model Drift","Detección Alucinaciones","Feedback Bucle RLHF","Soporte L3 / SLA <15m"],
         imageUrl: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['ai_inbound', 'ai_operations', 'ai_margin'],
@@ -607,7 +616,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Net Revenue Retention (NRR)', value: '138%', target: '>120%', trend: 'up', status: 'optimal' },
           { name: 'ROI de TI General', value: '284%', target: '>220%', trend: 'up', status: 'optimal' },
         ],
-        position3D: [8.5, 0.7, -0.75],
+        position3D: [6.8, 0.6, 0],
+        subChips: ["Margen Bruto +34.8%","Net Retention (NRR) 138%","ROI TI Proyectado 284%"],
         imageUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['ai_infra', 'ai_tech', 'ai_procurement'],
@@ -751,7 +761,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Tiempo de Validación de Evidencia Forense', value: '<2 hrs', target: '<4 hrs', trend: 'down', status: 'optimal' },
           { name: 'Cobertura de Planes de Continuidad BCP', value: '98.2%', target: '>95%', trend: 'up', status: 'optimal' },
         ],
-        position3D: [-5.0, 2.2, -2.0],
+        position3D: [-0.6, 3.8, 0],
+        subChips: ["Certificaciones SOC 2 / ISO","Continuidad BCP / DRP","Custodia Forense Legal","Gestión Riesgo NIST CSF"],
         imageUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['sec_marketing', 'sec_margin', 'sec_operations'],
@@ -806,7 +817,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Analistas Certificados (CISSP/GIAC)', value: '88%', target: '>80%', trend: 'up', status: 'optimal' },
           { name: 'Puntaje de Bienestar de Turno', value: '4.5/5', target: '4.2', trend: 'up', status: 'optimal' },
         ],
-        position3D: [-1.7, 2.2, -2.0],
+        position3D: [-0.6, 2.4, 0],
+        subChips: ["Certificaciones CISSP/OSCP","Rotación Anti-Burnout SOC","Simulacros Purple Teaming","Bienestar Turnos 24/7"],
         imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['sec_operations', 'sec_service'],
@@ -861,7 +873,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Precisión en Detección Heurística', value: '97.4%', target: '>95%', trend: 'up', status: 'optimal' },
           { name: 'Tiempo de Análisis de Malware', value: '90s', target: '<180s', trend: 'down', status: 'optimal' },
         ],
-        position3D: [1.7, 2.2, -2.0],
+        position3D: [-0.6, 1, 0],
+        subChips: ["Playbooks Autónomos SOAR","Detonación Malware Sandbox","Cripto Post-Cuántica (PQC)","Grafos de Ataque Heurísticos"],
         imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['sec_operations', 'sec_outbound', 'sec_margin'],
@@ -916,7 +929,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Costo por Endpoint Gestionado', value: '$4.20/mes', target: '<$5.00', trend: 'down', status: 'optimal' },
           { name: 'Disponibilidad de Módulos HSM', value: '99.999%', target: '99.999%', trend: 'neutral', status: 'optimal' },
         ],
-        position3D: [5.0, 2.2, -2.0],
+        position3D: [-0.6, -0.4, 0],
+        subChips: ["Licencias EDR/XDR Masivas","Hardware Criptográfico HSM","Feeds Threat Intelligence","Gestión Cadena SCRM"],
         imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['sec_inbound', 'sec_operations'],
@@ -972,7 +986,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Tasa de Normalización de Logs', value: '99.4%', target: '>98%', trend: 'up', status: 'optimal' },
           { name: 'Retención Cumplimiento Inmutable', value: '365 días', target: '365 días', trend: 'neutral', status: 'optimal' },
         ],
-        position3D: [-5.5, -0.8, 0.5],
+        position3D: [-5, -2.6, 0],
+        subChips: ["Telemetría SIEM / NetFlow","Normalización OCSF","Correlación IoCs & Hashes","Escaneo Activos & CVEs"],
         imageUrl: 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['sec_operations'],
@@ -1027,7 +1042,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Reducción de Falsos Positivos', value: '74%', target: '>70%', trend: 'up', status: 'optimal' },
           { name: 'Cobertura Tácticas MITRE', value: '91.8%', target: '>85%', trend: 'up', status: 'optimal' },
         ],
-        position3D: [-2.75, -0.8, 0.5],
+        position3D: [-2.8, -2.6, 0],
+        subChips: ["Monitoreo Continuo SOC 24/7","Threat Hunting MITRE","Análisis Conductual UEBA","Forense de Memoria RAM"],
         imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['sec_outbound', 'sec_service', 'sec_margin'],
@@ -1083,7 +1099,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Cobertura Zero Trust en Endpoints', value: '96.2%', target: '>95%', trend: 'up', status: 'optimal' },
           { name: 'Tasa de Fallas por Cambios de Reglas', value: '0.02%', target: '<0.1%', trend: 'down', status: 'optimal' },
         ],
-        position3D: [0.0, -0.8, 0.5],
+        position3D: [-0.6, -2.6, 0],
+        subChips: ["Microsegmentación Zero Trust","Parcheo Automatizado CVE","Reglas WAF / IPS Dinámicas","Aislamiento Inmediato Host"],
         imageUrl: 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['sec_service', 'sec_margin'],
@@ -1138,7 +1155,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Valor Anual de Contrato Promedio (ACV)', value: '$180K', target: '>$150K', trend: 'up', status: 'optimal' },
           { name: 'Net Promoter Score (NPS) Pre-venta', value: '+74', target: '>+65', trend: 'up', status: 'optimal' },
         ],
-        position3D: [2.75, -0.8, 0.5],
+        position3D: [1.6, -2.6, 0],
+        subChips: ["Evaluación Superficie Ataque","Cuantificación Riesgo FAIR","Suscripciones MDR Gestionadas","Auditorías Cumplimiento"],
         imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['sec_margin', 'sec_infra'],
@@ -1192,7 +1210,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Tasa de Recuperación Sin Pago de Rescate', value: '100%', target: '100%', trend: 'neutral', status: 'optimal' },
           { name: 'Retención de Clientes Post-Incidente', value: '99.2%', target: '>95%', trend: 'up', status: 'optimal' },
         ],
-        position3D: [5.5, -0.8, 0.5],
+        position3D: [3.8, -2.6, 0],
+        subChips: ["War Room DFIR <10 min","Contención Ransomware","Restauración Inmutable DRP","Peritaje Post-Mortem CSIRT"],
         imageUrl: 'https://images.unsplash.com/photo-1510511459019-5dda7724fd87?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['sec_inbound', 'sec_margin', 'sec_operations'],
@@ -1249,7 +1268,8 @@ export const SECTORS_DATA: Record<'ai' | 'cybersecurity', SectorData> = {
           { name: 'Retención Neta de Ingresos (NDR)', value: '142%', target: '>125%', trend: 'up', status: 'optimal' },
           { name: 'Valor en Riesgo Mitigado Anual', value: '$42.5M', target: '>$30M', trend: 'up', status: 'optimal' },
         ],
-        position3D: [8.5, 0.7, -0.75],
+        position3D: [6.8, 0.6, 0],
+        subChips: ["Margen Bruto MSSP +38.2%","Retención Clientes 99.2%","Riesgo Mitigado $42.5M"],
         imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80',
         systemicRole: {
           reinforces: ['sec_infra', 'sec_tech', 'sec_procurement'],

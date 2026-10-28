@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import * as THREE from 'three';
 import type { ActivityNode } from '../../types/valueChain';
-import { useValueChainStore } from '../../store/useValueChainStore';
+import { useValueChainStore, useFilteredActivityIds } from '../../store/useValueChainStore';
 
 interface Connections3DProps {
   activities: ActivityNode[];
@@ -14,6 +14,8 @@ export const Connections3D: React.FC<Connections3DProps> = ({ activities }) => {
   const hoveredActivityId = useValueChainStore((s) => s.hoveredActivityId);
   const highlightedLoopId = useValueChainStore((s) => s.highlightedLoopId);
 
+  const { activeIds, isFilteringActive } = useFilteredActivityIds();
+
   // Map of nodes by ID for fast coordinate lookup
   const nodeMap = useMemo(() => {
     const map = new Map<string, ActivityNode>();
@@ -22,37 +24,117 @@ export const Connections3D: React.FC<Connections3DProps> = ({ activities }) => {
   }, [activities]);
 
   // Primary sequential flow: PR-01 -> PR-02 -> PR-03 -> PR-04 -> PR-05 -> VAL-00
-  const primaryFlow = useMemo(() => {
+  // Computed edge-to-edge so lines NEVER cross through block interiors or over text
+  const primaryFlowSegments = useMemo(() => {
     const primaryNodes = activities
       .filter((a) => a.category === 'primary')
       .sort((a, b) => a.position3D[0] - b.position3D[0]);
     const marginNode = activities.find((a) => a.category === 'margin');
 
-    const pairs: [ActivityNode, ActivityNode][] = [];
+    const segments: {
+      source: ActivityNode;
+      target: ActivityNode;
+      points: [[number, number, number], [number, number, number]];
+      arrowPos: [number, number, number];
+    }[] = [];
+
     for (let i = 0; i < primaryNodes.length - 1; i++) {
-      pairs.push([primaryNodes[i], primaryNodes[i + 1]]);
+      const src = primaryNodes[i];
+      const tgt = primaryNodes[i + 1];
+      const startX = src.position3D[0] + 0.82;
+      const endX = tgt.position3D[0] - 0.82;
+      const y = -2.4;
+      segments.push({
+        source: src,
+        target: tgt,
+        points: [
+          [startX, y, 0],
+          [endX, y, 0],
+        ],
+        arrowPos: [(startX + endX) / 2, y, 0],
+      });
     }
+
     if (primaryNodes.length > 0 && marginNode) {
-      pairs.push([primaryNodes[primaryNodes.length - 1], marginNode]);
+      const src = primaryNodes[primaryNodes.length - 1];
+      const startX = src.position3D[0] + 0.82;
+      const endX = 6.0; // Entrance to Margin Chevron base
+      const y = -2.4;
+      segments.push({
+        source: src,
+        target: marginNode,
+        points: [
+          [startX, y, 0],
+          [endX, y, 0],
+        ],
+        arrowPos: [(startX + endX) / 2, y, 0],
+      });
     }
-    return pairs;
+
+    return segments;
   }, [activities]);
 
-  // Support to Primary influence connections
-  const supportConnections = useMemo(() => {
+  // Support to Primary / Support to Support / Support to Margin connections
+  // Engineered with smart routing:
+  // - Support to Margin: Exits right side (x=3.65) and flows in clear corridor to Margin
+  // - Support to Support: Curves along right corridor (x=4.3)
+  // - Support to Primary: Curves BEHIND blocks in depth (z=-1.6) so it NEVER crosses over text
+  const supportConnectionPaths = useMemo(() => {
     const supportNodes = activities.filter((a) => a.category === 'support');
-    const connections: [ActivityNode, ActivityNode][] = [];
+    const paths: {
+      support: ActivityNode;
+      target: ActivityNode;
+      points: [number, number, number][];
+    }[] = [];
 
     supportNodes.forEach((sup) => {
       sup.systemicRole.reinforces.forEach((targetId) => {
-        const target = nodeMap.get(targetId);
-        if (target) {
-          connections.push([sup, target]);
+        const tgt = nodeMap.get(targetId);
+        if (!tgt) return;
+
+        if (tgt.category === 'margin') {
+          // Route cleanly along the open right corridor into Margin notch
+          const start = new THREE.Vector3(3.65, sup.position3D[1], 0);
+          const end = new THREE.Vector3(6.8, 0.5, 0);
+          const mid = new THREE.Vector3(5.2, (start.y + end.y) / 2, 0);
+          const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+          paths.push({
+            support: sup,
+            target: tgt,
+            points: curve.getPoints(16).map((p) => [p.x, p.y, p.z]),
+          });
+        } else if (tgt.category === 'support') {
+          // Route along the right corridor outside the support blocks
+          const start = new THREE.Vector3(3.65, sup.position3D[1], 0);
+          const end = new THREE.Vector3(3.65, tgt.position3D[1], 0);
+          const mid = new THREE.Vector3(4.35, (start.y + end.y) / 2, 0);
+          const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+          paths.push({
+            support: sup,
+            target: tgt,
+            points: curve.getPoints(16).map((p) => [p.x, p.y, p.z]),
+          });
+        } else {
+          // Target is primary: Curve BEHIND the intermediate support blocks
+          // Using deep negative Z (z=-1.6) so it passes behind the 3D meshes without cutting across text
+          const start = new THREE.Vector3(sup.position3D[0], sup.position3D[1] - 0.38, -0.3);
+          const end = new THREE.Vector3(tgt.position3D[0], -1.3, -0.3);
+          const mid = new THREE.Vector3(
+            (start.x + end.x) / 2,
+            (start.y + end.y) / 2,
+            -1.6
+          );
+          const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+          paths.push({
+            support: sup,
+            target: tgt,
+            points: curve.getPoints(20).map((p) => [p.x, p.y, p.z]),
+          });
         }
       });
     });
 
-    return connections;
+    return paths;
   }, [activities, nodeMap]);
 
   // Systemic Feedback Loop (Service to Inbound - e.g. Data Flywheel / Threat Intelligence)
@@ -61,17 +143,13 @@ export const Connections3D: React.FC<Connections3DProps> = ({ activities }) => {
     const inboundNode = activities.find((a) => a.porterType === 'inbound_logistics');
     if (!serviceNode || !inboundNode) return null;
 
-    // Arching curve above the scene
-    const start = new THREE.Vector3(...serviceNode.position3D);
-    const end = new THREE.Vector3(...inboundNode.position3D);
-    const mid = new THREE.Vector3(
-      (start.x + end.x) / 2,
-      start.y + 4.5,
-      (start.z + end.z) / 2 - 2.5
-    );
+    // Arching curve beneath the entire primary row at y = -4.2
+    const start = new THREE.Vector3(serviceNode.position3D[0], -3.5, 0);
+    const end = new THREE.Vector3(inboundNode.position3D[0], -3.5, 0);
+    const mid = new THREE.Vector3((start.x + end.x) / 2, -4.3, -0.8);
 
     const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
-    const points = curve.getPoints(32).map((p) => [p.x, p.y, p.z] as [number, number, number]);
+    const points = curve.getPoints(24).map((p) => [p.x, p.y, p.z] as [number, number, number]);
 
     return { curve, points, serviceNode, inboundNode };
   }, [activities]);
@@ -79,10 +157,9 @@ export const Connections3D: React.FC<Connections3DProps> = ({ activities }) => {
   // Energy pulse spheres tracking
   const p1Ref = useRef<THREE.Mesh>(null);
   const p2Ref = useRef<THREE.Mesh>(null);
-  const p3Ref = useRef<THREE.Mesh>(null);
   const pFeedbackRef = useRef<THREE.Mesh>(null);
 
-  // Animate pulses
+  // Animate pulses exclusively in the gaps
   useFrame((state) => {
     const t = state.clock.elapsedTime;
 
@@ -93,33 +170,24 @@ export const Connections3D: React.FC<Connections3DProps> = ({ activities }) => {
       pFeedbackRef.current.position.set(pos.x, pos.y, pos.z);
     }
 
-    // Primary stream pulses
-    if (primaryFlow.length > 0) {
-      const activePair1 = primaryFlow[0];
-      const activePair2 = primaryFlow[Math.min(2, primaryFlow.length - 1)];
-      const activePair3 = primaryFlow[primaryFlow.length - 1];
+    // Primary stream gap pulses
+    if (primaryFlowSegments.length > 0) {
+      const seg1 = primaryFlowSegments[0];
+      const segLast = primaryFlowSegments[primaryFlowSegments.length - 1];
 
-      if (p1Ref.current && activePair1) {
+      if (p1Ref.current && seg1) {
         const p = (t * 0.8) % 1;
         p1Ref.current.position.lerpVectors(
-          new THREE.Vector3(...activePair1[0].position3D),
-          new THREE.Vector3(...activePair1[1].position3D),
+          new THREE.Vector3(...seg1.points[0]),
+          new THREE.Vector3(...seg1.points[1]),
           p
         );
       }
-      if (p2Ref.current && activePair2) {
+      if (p2Ref.current && segLast) {
         const p = ((t + 0.5) * 0.8) % 1;
         p2Ref.current.position.lerpVectors(
-          new THREE.Vector3(...activePair2[0].position3D),
-          new THREE.Vector3(...activePair2[1].position3D),
-          p
-        );
-      }
-      if (p3Ref.current && activePair3) {
-        const p = ((t + 1.0) * 0.8) % 1;
-        p3Ref.current.position.lerpVectors(
-          new THREE.Vector3(...activePair3[0].position3D),
-          new THREE.Vector3(...activePair3[1].position3D),
+          new THREE.Vector3(...segLast.points[0]),
+          new THREE.Vector3(...segLast.points[1]),
           p
         );
       }
@@ -128,92 +196,95 @@ export const Connections3D: React.FC<Connections3DProps> = ({ activities }) => {
 
   return (
     <group>
-      {/* 1. Primary sequential value flow lines (Thick, glowing Neural Blue) */}
-      {primaryFlow.map(([source, target], idx) => {
+      {/* 1. Primary sequential value flow lines (Sleek, gap-bridging Neural Blue) */}
+      {primaryFlowSegments.map((seg, idx) => {
         const isRelated =
-          selectedActivityId === source.id ||
-          selectedActivityId === target.id ||
-          hoveredActivityId === source.id ||
-          hoveredActivityId === target.id;
+          selectedActivityId === seg.source.id ||
+          selectedActivityId === seg.target.id ||
+          hoveredActivityId === seg.source.id ||
+          hoveredActivityId === seg.target.id;
+
+        const isDimmed = isFilteringActive && (!activeIds.has(seg.source.id) || !activeIds.has(seg.target.id));
 
         return (
           <group key={`primary-flow-${idx}`}>
             <Line
-              points={[source.position3D, target.position3D]}
-              color={isRelated ? '#8AB8FF' : '#1D63FF'}
-              lineWidth={isRelated ? 4 : 2.5}
+              points={seg.points}
+              color={isRelated ? '#38BDF8' : '#0284C7'}
+              lineWidth={isRelated ? 2.5 : 1.4}
               transparent
-              opacity={isRelated ? 0.95 : 0.65}
+              opacity={isDimmed ? 0.08 : isRelated ? 0.95 : 0.55}
             />
+            {/* Directional flow arrow marker in gap */}
+            <mesh position={seg.arrowPos} rotation={[0, 0, -Math.PI / 2]}>
+              <coneGeometry args={[0.07, 0.16, 8]} />
+              <meshBasicMaterial
+                color={isRelated ? '#38BDF8' : '#0284C7'}
+                transparent
+                opacity={isDimmed ? 0.08 : isRelated ? 0.95 : 0.65}
+              />
+            </mesh>
           </group>
         );
       })}
 
-      {/* 2. Support-to-Primary influence lines (Subtle curved or dashed links) */}
-      {supportConnections.map(([support, primary], idx) => {
+      {/* 2. Support-to-Primary influence lines: ONLY visible on hover/select, routed outside or behind */}
+      {supportConnectionPaths.map(({ support, target, points }, idx) => {
         const isRelated =
           selectedActivityId === support.id ||
-          selectedActivityId === primary.id ||
+          selectedActivityId === target.id ||
           hoveredActivityId === support.id ||
-          hoveredActivityId === primary.id;
+          hoveredActivityId === target.id ||
+          Boolean(highlightedLoopId);
 
-        // Create subtle arched curve
-        const start = new THREE.Vector3(...support.position3D);
-        const end = new THREE.Vector3(...primary.position3D);
-        const mid = new THREE.Vector3(
-          (start.x + end.x) / 2,
-          (start.y + end.y) / 2 + 0.4,
-          (start.z + end.z) / 2
-        );
-        const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
-        const points = curve.getPoints(16).map((p) => [p.x, p.y, p.z] as [number, number, number]);
+        if (!isRelated) return null; // Keep scene completely clean when idle!
 
         return (
           <group key={`support-flow-${idx}`}>
             <Line
               points={points}
-              color={isRelated ? '#387BFF' : '#435068'}
-              lineWidth={isRelated ? 3 : 1.2}
+              color="#818CF8"
+              lineWidth={2.2}
               transparent
-              opacity={isRelated ? 0.9 : 0.3}
-              dashed={!isRelated}
-              dashSize={0.3}
-              gapSize={0.2}
+              opacity={0.85}
+              dashed
+              dashSize={0.25}
+              gapSize={0.15}
+              depthTest={true}
             />
           </group>
         );
       })}
 
-      {/* 3. Systemic Arching Feedback Loop (Data Flywheel / Threat Loop) */}
+      {/* 3. Systemic Arching Feedback Loop (Only visible when loop active or hovered) */}
       {feedbackLoop && (
         <group>
           <Line
             points={feedbackLoop.points}
-            color={highlightedLoopId ? '#8AB8FF' : '#387BFF'}
-            lineWidth={3.5}
+            color="#38BDF8"
+            lineWidth={highlightedLoopId ? 3.0 : 1.5}
             transparent
-            opacity={0.8}
+            opacity={highlightedLoopId ? 0.9 : 0.4}
+            dashed
+            dashSize={0.3}
+            gapSize={0.2}
           />
-          {/* Traveling energy photon on feedback loop */}
+          {/* Traveling energy photon */}
           <mesh ref={pFeedbackRef}>
-            <sphereGeometry args={[0.18, 16, 16]} />
-            <meshBasicMaterial color="#8AB8FF" />
+            <sphereGeometry args={[0.12, 12, 12]} />
+            <meshBasicMaterial color="#38BDF8" />
           </mesh>
         </group>
       )}
 
-      {/* Traveling energy photons on primary stream */}
+      {/* Primary stream energy photons */}
       <mesh ref={p1Ref}>
-        <sphereGeometry args={[0.14, 16, 16]} />
-        <meshBasicMaterial color="#5C96FF" />
+        <sphereGeometry args={[0.08, 12, 12]} />
+        <meshBasicMaterial color="#38BDF8" />
       </mesh>
       <mesh ref={p2Ref}>
-        <sphereGeometry args={[0.14, 16, 16]} />
-        <meshBasicMaterial color="#8AB8FF" />
-      </mesh>
-      <mesh ref={p3Ref}>
-        <sphereGeometry args={[0.16, 16, 16]} />
-        <meshBasicMaterial color="#387BFF" />
+        <sphereGeometry args={[0.09, 12, 12]} />
+        <meshBasicMaterial color="#F59E0B" />
       </mesh>
     </group>
   );

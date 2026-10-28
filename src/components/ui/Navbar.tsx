@@ -1,18 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import {
-  Brain,
-  ShieldAlert,
-  Layers,
-  Box,
-  TableProperties,
-  Search,
-  Filter,
-  FileText,
-  RotateCcw,
-  Sparkles,
-} from 'lucide-react';
-import { useValueChainStore } from '../../store/useValueChainStore';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useValueChainStore, useFilteredActivityIds } from '../../store/useValueChainStore';
 import type { SectorType, ViewMode, FilterType } from '../../types/valueChain';
 
 export const Navbar: React.FC = () => {
@@ -27,156 +15,201 @@ export const Navbar: React.FC = () => {
   const setIsSummaryModalOpen = useValueChainStore((s) => s.setIsSummaryModalOpen);
   const resetSimulation = useValueChainStore((s) => s.resetSimulation);
 
-  const sectors: { id: SectorType; label: string; icon: React.ReactNode; subtitle: string }[] = [
-    {
-      id: 'ai',
-      label: 'Sector A: Inteligencia Artificial',
-      subtitle: 'Enterprise AI & MLOps',
-      icon: <Brain className="w-4 h-4 text-[#387BFF]" />,
-    },
-    {
-      id: 'cybersecurity',
-      label: 'Sector B: Ciberseguridad',
-      subtitle: 'MSSP & Zero Trust',
-      icon: <ShieldAlert className="w-4 h-4 text-[#8AB8FF]" />,
-    },
+  const { isFilteringActive, matchCount } = useFilteredActivityIds();
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close filter dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterMenuRef.current && !filterMenuRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const sectors: { id: SectorType; label: string }[] = [
+    { id: 'ai', label: 'Inteligencia Artificial' },
+    { id: 'cybersecurity', label: 'Ciberseguridad' },
   ];
 
-  const views: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { id: 'hybrid', label: 'Híbrido (3D + KPIs)', icon: <Layers className="w-3.5 h-3.5" /> },
-    { id: '3d', label: '3D Inmersivo', icon: <Box className="w-3.5 h-3.5" /> },
-    { id: 'matrix', label: 'Matriz Porter & ITIL', icon: <TableProperties className="w-3.5 h-3.5" /> },
+  const views: { id: ViewMode; label: string }[] = [
+    { id: 'hybrid', label: 'Híbrido' },
+    { id: '3d', label: '3D' },
+    { id: 'matrix', label: 'Matriz' },
   ];
 
-  const filters: { id: FilterType; label: string }[] = [
-    { id: 'all', label: 'Todas' },
-    { id: 'primary', label: 'Primarias' },
-    { id: 'support', label: 'Apoyo' },
-    { id: 'bottleneck', label: 'Cuellos de Botella' },
+  const filters: { id: FilterType; label: string; desc: string }[] = [
+    { id: 'all', label: 'Todas las Actividades', desc: 'Vista completa de la cadena de valor' },
+    { id: 'primary', label: 'Actividades Primarias', desc: 'Flujo operacional secuencial (5 eslabones)' },
+    { id: 'support', label: 'Actividades de Apoyo', desc: 'Pilares transversales de soporte' },
+    { id: 'bottleneck', label: 'Cuellos de Botella', desc: 'Nodos con saturación o riesgo crítico' },
   ];
+
+  const activeFilterLabel =
+    filterType === 'primary'
+      ? 'Primarias'
+      : filterType === 'support'
+      ? 'Apoyo'
+      : filterType === 'bottleneck'
+      ? 'Cuellos'
+      : 'Filtro';
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#050508]/85 backdrop-blur-xl border-b border-[#8FA0B5]/15">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top Tier: Title, Sector Switcher & Executive Report */}
-        <div className="flex flex-col md:flex-row items-center justify-between py-3.5 gap-4">
-          {/* Logo & Course Info */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#1D63FF] to-[#8AB8FF] flex items-center justify-center shadow-[0_0_20px_rgba(29,99,255,0.4)]">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-[#1D63FF]/20 text-[#8AB8FF] border border-[#1D63FF]/30">
-                  GSTI • CASO PRÁCTICO 02
-                </span>
-                <span className="text-[11px] font-mono text-[#8FA0B5] hidden sm:inline">
-                  Porter + ITIL 4 + Dinámica Sistémica
-                </span>
-              </div>
-              <h1 className="text-lg sm:text-xl font-extrabold tracking-tight text-[#F2F5F8]">
-                Arquetipo Sistémico de Cadena de Valor
-              </h1>
-            </div>
+    <header className="sticky top-0 z-40 w-full bg-[#070B14]/95 backdrop-blur-2xl border-b border-slate-800">
+      <div className="w-full max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-18 py-3.5 gap-4">
+          {/* 1. Brand (Pure, elegant typography - ZERO badges, ZERO icons) */}
+          <div className="flex items-center shrink-0">
+            <span className="text-base sm:text-lg font-bold text-white tracking-tight whitespace-nowrap">
+              Cadena de Valor
+            </span>
           </div>
 
-          {/* Sector Switcher (Animated with Framer Motion layoutId) */}
-          <div className="flex items-center p-1 rounded-xl bg-[#0D1322] border border-[#2C374B] shadow-inner">
+          {/* 2. Center: Sector Switcher (Pure text, h-10, comfortable, single-line) */}
+          <div className="flex items-center h-10 p-1 rounded-lg bg-[#0D1322] border border-slate-800 shrink-0">
             {sectors.map((sec) => {
               const isActive = activeSector === sec.id;
               return (
                 <button
                   key={sec.id}
                   onClick={() => switchSector(sec.id)}
-                  className="relative px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-2 z-10"
+                  className={`relative h-8 px-4 sm:px-5 rounded-md text-sm font-semibold transition-all whitespace-nowrap z-10 ${
+                    isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+                  }`}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="activeSectorPill"
-                      className="absolute inset-0 bg-gradient-to-r from-[#1B2436] to-[#1D63FF]/30 border border-[#387BFF]/60 rounded-lg shadow-[0_0_15px_rgba(29,99,255,0.35)] -z-10"
-                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      className="absolute inset-0 bg-[#1A2642] border border-blue-500/50 rounded-md -z-10 shadow-sm"
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                     />
                   )}
-                  {sec.icon}
-                  <div className="text-left">
-                    <span className={isActive ? 'text-white' : 'text-[#8FA0B5]'}>{sec.label}</span>
-                  </div>
+                  {sec.label}
                 </button>
               );
             })}
           </div>
 
-          {/* Executive Report & Reset Buttons */}
-          <div className="flex items-center gap-2">
+          {/* 3. Right: Controls & Actions (Unified h-10, pure text, ZERO icons) */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* View Mode Toggle */}
+            <div className="hidden sm:flex items-center h-10 bg-[#0D1322] p-1 rounded-lg border border-slate-800">
+              {views.map((v) => (
+                <button
+                  key={v.id}
+                  onClick={() => setViewMode(v.id)}
+                  className={`h-8 px-3.5 rounded-md text-sm font-medium transition-all whitespace-nowrap ${
+                    viewMode === v.id
+                      ? 'bg-blue-600 text-white font-semibold shadow-sm'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  }`}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Filter Dropdown Popover */}
+            <div className="relative" ref={filterMenuRef}>
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className={`h-10 px-3.5 rounded-lg text-sm font-medium border transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                  filterType !== 'all'
+                    ? 'bg-blue-500/20 text-blue-300 border-blue-500/50'
+                    : 'bg-[#0D1322] text-slate-300 border-slate-800 hover:text-white hover:border-slate-700'
+                }`}
+              >
+                <span>{activeFilterLabel}</span>
+                <span className="text-[10px] opacity-60">▼</span>
+              </button>
+
+              <AnimatePresence>
+                {isFilterOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-64 rounded-xl bg-[#0D1322] border border-slate-700 shadow-2xl p-2 z-50 backdrop-blur-2xl"
+                  >
+                    <div className="px-3 py-1.5 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800 mb-1 font-semibold">
+                      Filtrar por Dimensión
+                    </div>
+                    {filters.map((f) => (
+                      <button
+                        key={f.id}
+                        onClick={() => {
+                          setFilterType(f.id);
+                          setIsFilterOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm flex flex-col gap-0.5 transition-colors ${
+                          filterType === f.id
+                            ? 'bg-blue-600/20 text-blue-300 font-semibold'
+                            : 'text-slate-300 hover:bg-slate-800/60'
+                        }`}
+                      >
+                        <span className="flex items-center justify-between">
+                          <span>{f.label}</span>
+                          {filterType === f.id && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                          )}
+                        </span>
+                        <span className="text-xs text-slate-400 font-normal">
+                          {f.desc}
+                        </span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar..."
+                className="h-10 px-3.5 w-28 sm:w-36 md:w-44 focus:w-56 transition-all duration-200 text-sm bg-[#0D1322] border border-slate-800 rounded-lg text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  title="Limpiar búsqueda"
+                  className="absolute right-2.5 text-sm text-slate-400 hover:text-white"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+
+            {/* Filter Results Counter */}
+            {isFilteringActive && (
+              <span className="hidden xl:inline text-xs px-2.5 py-1 rounded-md bg-blue-500/15 text-blue-300 border border-blue-500/30 whitespace-nowrap">
+                {matchCount} {matchCount === 1 ? 'coincidencia' : 'coincidencias'}
+              </span>
+            )}
+
+            {/* Executive Report Button */}
             <button
               onClick={() => setIsSummaryModalOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-[#1B2436] hover:bg-[#2C374B] text-[#F2F5F8] border border-[#387BFF]/40 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+              className="h-10 px-4 rounded-lg bg-[#0D1322] hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-sm font-semibold transition-all whitespace-nowrap active:scale-95"
             >
-              <FileText className="w-3.5 h-3.5 text-[#8AB8FF]" />
-              <span>Resumen Ejecutivo</span>
+              Resumen
             </button>
 
+            {/* Reset Simulation Button */}
             <button
               onClick={resetSimulation}
-              title="Restablecer simulación a valores nominales"
-              className="p-2 rounded-lg bg-[#0D1322] hover:bg-[#1B2436] text-[#8FA0B5] hover:text-[#F2F5F8] border border-[#2C374B] transition-all active:scale-95"
+              title="Restablecer valores nominales"
+              className="h-10 px-3 rounded-lg bg-[#0D1322] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-sm font-medium transition-all whitespace-nowrap active:scale-95 shrink-0"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              Reiniciar
             </button>
-          </div>
-        </div>
-
-        {/* Bottom Tier: View Modes, Filter Pills & Search */}
-        <div className="flex flex-col sm:flex-row items-center justify-between pb-3 pt-1 border-t border-[#8FA0B5]/10 gap-3">
-          {/* View Mode Tabs */}
-          <div className="flex items-center gap-1 bg-[#0D1322]/80 p-1 rounded-lg border border-[#2C374B]/70">
-            {views.map((v) => (
-              <button
-                key={v.id}
-                onClick={() => setViewMode(v.id)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all ${
-                  viewMode === v.id
-                    ? 'bg-[#1D63FF] text-white shadow-sm font-semibold'
-                    : 'text-[#8FA0B5] hover:text-[#C5D0DE] hover:bg-[#1B2436]/60'
-                }`}
-              >
-                {v.icon}
-                <span>{v.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Quick Filters */}
-          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 sm:pb-0">
-            <span className="text-[11px] font-mono text-[#8FA0B5] mr-1 flex items-center gap-1 hidden lg:flex">
-              <Filter className="w-3 h-3" />
-              Filtro:
-            </span>
-            {filters.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setFilterType(f.id)}
-                className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono transition-all border ${
-                  filterType === f.id
-                    ? 'bg-[#1D63FF]/20 text-[#8AB8FF] border-[#1D63FF]/70 font-semibold'
-                    : 'bg-transparent text-[#8FA0B5] border-[#2C374B] hover:text-[#C5D0DE] hover:border-[#435068]'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative w-full sm:w-48 lg:w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8FA0B5]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar eslabón o ITIL..."
-              className="w-full pl-8 pr-3 py-1 rounded-lg bg-[#0D1322] border border-[#2C374B] text-xs text-[#F2F5F8] placeholder-[#8FA0B5]/60 focus:outline-none focus:border-[#1D63FF] focus:ring-1 focus:ring-[#1D63FF] transition-all"
-            />
           </div>
         </div>
       </div>

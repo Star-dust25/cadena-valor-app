@@ -64,6 +64,7 @@ export interface ActivityNode {
   kpis: ActivityKPI[];
   position3D: [number, number, number];
   colorAccent?: string;
+  subChips?: string[]; // Post-it style task chips like Apple / UTP slides
   imageUrl: string;
   systemicRole: SystemicRole;
   metrics: ActivityMetrics;

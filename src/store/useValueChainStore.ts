@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import { toast } from 'sonner';
 import type {
@@ -371,3 +372,102 @@ export const useValueChainStore = create<ValueChainStore>((set, get) => ({
     };
   },
 }));
+
+// Reactive custom hooks to guarantee immediate React re-renders without snapshot instability
+export const useActiveSectorData = (): SectorData =>
+  useValueChainStore((s) => s.sectorsData[s.activeSector]);
+
+export const useSelectedActivity = (): ActivityNode | null => {
+  const selectedActivityId = useValueChainStore((s) => s.selectedActivityId);
+  const sector = useActiveSectorData();
+
+  return useMemo(() => {
+    if (!selectedActivityId) return null;
+    return sector.activities.find((a) => a.id === selectedActivityId) || null;
+  }, [selectedActivityId, sector]);
+};
+
+export const useSimulationResult = (): SimulationResult => {
+  const sector = useActiveSectorData();
+  const calculateSimulationResult = useValueChainStore((s) => s.calculateSimulationResult);
+
+  return useMemo(() => {
+    return calculateSimulationResult();
+  }, [sector, calculateSimulationResult]);
+};
+
+export interface FilterResult {
+  activeIds: Set<string>;
+  isFilteringActive: boolean;
+  matchCount: number;
+}
+
+export const useFilteredActivityIds = (): FilterResult => {
+  const filterType = useValueChainStore((s) => s.filterType);
+  const searchQuery = useValueChainStore((s) => s.searchQuery);
+  const sector = useActiveSectorData();
+
+  return useMemo(() => {
+    const isSearchActive = searchQuery.trim().length > 0;
+    const isFilterActive = filterType !== 'all';
+    const isFilteringActive = isSearchActive || isFilterActive;
+
+    if (!isFilteringActive) {
+      return {
+        activeIds: new Set(sector.activities.map((a) => a.id)),
+        isFilteringActive: false,
+        matchCount: sector.activities.length,
+      };
+    }
+
+    let list = sector.activities;
+
+    // Search query filter
+    if (isSearchActive) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter((a) => {
+        const inName = a.name.toLowerCase().includes(q);
+        const inCode = a.code.toLowerCase().includes(q);
+        const inItilStage = a.itilStage.toLowerCase().includes(q);
+        const inItilPractice = a.itilPractice.toLowerCase().includes(q);
+        const inShortDesc = a.shortDescription.toLowerCase().includes(q);
+        const inSubChips = a.subChips?.some((c) => c.toLowerCase().includes(q)) ?? false;
+        const inProcesses = a.keyProcesses?.some((p) => p.toLowerCase().includes(q)) ?? false;
+        const inTech = a.techStack?.some((t) => t.toLowerCase().includes(q)) ?? false;
+        return inName || inCode || inItilStage || inItilPractice || inShortDesc || inSubChips || inProcesses || inTech;
+      });
+    }
+
+    // Category / Status Filter
+    if (filterType === 'primary') {
+      list = list.filter((a) => a.category === 'primary');
+    } else if (filterType === 'support') {
+      list = list.filter((a) => a.category === 'support');
+    } else if (filterType === 'bottleneck') {
+      list = list.filter(
+        (a) =>
+          a.systemicRole.bottleneckRisk === 'high' ||
+          a.systemicRole.bottleneckRisk === 'critical' ||
+          a.metrics.budgetUSD < a.defaultMetrics.budgetUSD * 0.7 ||
+          a.metrics.automationPct < 60
+      );
+    } else if (filterType === 'critical_itil') {
+      list = list.filter(
+        (a) =>
+          a.itilStage.toLowerCase().includes('entregar') ||
+          a.itilStage.toLowerCase().includes('obtener') ||
+          a.category === 'margin'
+      );
+    }
+
+    const matchedIds = new Set(list.map((a) => a.id));
+
+    return {
+      activeIds: matchedIds,
+      isFilteringActive: true,
+      matchCount: matchedIds.size,
+    };
+  }, [filterType, searchQuery, sector]);
+};
+
+

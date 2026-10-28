@@ -1,17 +1,17 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Float, Html } from '@react-three/drei';
+import { Float, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import type { ActivityNode } from '../../types/valueChain';
-import { useValueChainStore } from '../../store/useValueChainStore';
+import { useValueChainStore, useSimulationResult } from '../../store/useValueChainStore';
 
 interface Node3DProps {
   activity: ActivityNode;
+  isDimmed?: boolean;
 }
 
-export const Node3D: React.FC<Node3DProps> = ({ activity }) => {
+export const Node3D: React.FC<Node3DProps> = ({ activity, isDimmed = false }) => {
   const meshRef = useRef<THREE.Mesh>(null);
-  const glowMeshRef = useRef<THREE.Mesh>(null);
 
   const selectedActivityId = useValueChainStore((s) => s.selectedActivityId);
   const hoveredActivityId = useValueChainStore((s) => s.hoveredActivityId);
@@ -28,107 +28,105 @@ export const Node3D: React.FC<Node3DProps> = ({ activity }) => {
     activity.metrics.automationPct < 50;
 
   const [hoveredLocal, setHoveredLocal] = useState(false);
+  const simulation = useSimulationResult();
 
-  // Smooth hover/select scaling and subtle idle rotation
-  useFrame((state, delta) => {
+  // Chevron shape for the Margin 3D Arrowhead (Clean, sharp, symmetric 2.4-width arrow)
+  const chevronShape = useMemo(() => {
+    const s = new THREE.Shape();
+    // Symmetric Chevron pointing right:
+    // Vertical span: y = -4.1 to y = 4.1 (covers both support and primary rows)
+    // Apex pointing right at y = -0.1 (x = 2.5)
+    // Inner notch at y = -0.1 (x = 0.1)
+    // Horizontal thickness = 2.4 everywhere
+    s.moveTo(-1.2, -4.1);
+    s.lineTo(1.2, -4.1);
+    s.lineTo(2.5, -0.1);
+    s.lineTo(1.2, 4.1);
+    s.lineTo(-1.2, 4.1);
+    s.lineTo(0.1, -0.1);
+    s.closePath();
+    return s;
+  }, []);
+
+  // Smooth hover/select scaling
+  useFrame((_, delta) => {
     if (!meshRef.current) return;
-
-    const targetScale = isSelected ? 1.15 : isHovered || hoveredLocal ? 1.08 : 1.0;
+    const targetScale = isDimmed ? 0.95 : isSelected ? 1.05 : isHovered || hoveredLocal ? 1.03 : 1.0;
     meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), delta * 8);
-
-    // Margin node spins slightly
-    if (isMargin) {
-      meshRef.current.rotation.y += delta * 0.4;
-      meshRef.current.rotation.z += delta * 0.2;
-    }
-
-    // Pulse glow if selected or bottleneck
-    if (glowMeshRef.current) {
-      if (isBottleneck) {
-        const pulse = (Math.sin(state.clock.elapsedTime * 4) + 1) * 0.5;
-        const mat = glowMeshRef.current.material as THREE.MeshBasicMaterial;
-        mat.opacity = 0.25 + pulse * 0.35;
-      } else if (isSelected) {
-        const pulse = (Math.sin(state.clock.elapsedTime * 3) + 1) * 0.5;
-        const mat = glowMeshRef.current.material as THREE.MeshBasicMaterial;
-        mat.opacity = 0.3 + pulse * 0.25;
-      }
-    }
   });
 
-  // Base colors
-  let baseColor = '#0D1322';
-  let emissiveColor = '#1D63FF';
-  let emissiveIntensity = 0.2;
-
-  if (isMargin) {
-    baseColor = '#1B2436';
-    emissiveColor = '#387BFF';
-    emissiveIntensity = 0.7;
-  } else if (isSupport) {
-    baseColor = '#111827';
-    emissiveColor = '#5C96FF';
-    emissiveIntensity = 0.15;
-  }
+  // Category-based colors for distinct UX clarity
+  // Support: Deep Indigo / Lavender
+  // Primary: Deep Navy / Electric Sky Blue
+  // Margin: Deep Bronze / Golden Amber
+  let baseColor = isSupport ? '#151D33' : isMargin ? '#24180A' : '#0B1D3A';
+  let emissiveColor = isSupport ? '#818CF8' : isMargin ? '#F59E0B' : '#38BDF8';
+  let emissiveIntensity = isMargin ? 0.45 : isSelected ? 0.65 : isHovered || hoveredLocal ? 0.45 : 0.15;
 
   if (isBottleneck) {
     emissiveColor = '#EF4444';
-    emissiveIntensity = 0.8;
-  } else if (isSelected) {
-    emissiveColor = '#387BFF';
-    emissiveIntensity = 0.9;
-  } else if (isHovered || hoveredLocal) {
-    emissiveColor = '#8AB8FF';
-    emissiveIntensity = 0.6;
+    emissiveIntensity = 0.75;
   }
 
-  // Node dimensions based on category
-  const boxWidth = isMargin ? 1.8 : isSupport ? 2.1 : 2.0;
-  const boxHeight = isMargin ? 1.8 : isSupport ? 1.1 : 1.3;
-  const boxDepth = isMargin ? 1.8 : isSupport ? 1.2 : 1.4;
+  // Node dimensions based on Porter Chevron layout
+  const boxWidth = isSupport ? 8.4 : 1.6;
+  const boxHeight = isSupport ? 0.75 : 2.2;
+  const boxDepth = 0.45;
+
+  // Short labels for clean primary column display
+  const getPrimaryShortLabel = () => {
+    switch (activity.porterType) {
+      case 'inbound_logistics':
+        return 'Logística\nEntrada';
+      case 'operations':
+        return 'Operaciones';
+      case 'outbound_logistics':
+        return 'Logística\nSalida';
+      case 'marketing_sales':
+        return 'Marketing\ny Ventas';
+      case 'service':
+        return 'Servicio\nPostventa';
+      default:
+        return activity.name;
+    }
+  };
 
   return (
     <Float
-      speed={isMargin ? 2.5 : 1.5}
-      rotationIntensity={isMargin ? 0.4 : 0.15}
-      floatIntensity={isMargin ? 0.6 : 0.3}
+      speed={isMargin ? 1.2 : 0.6}
+      rotationIntensity={0.02}
+      floatIntensity={0.1}
       position={activity.position3D}
     >
-      <group>
-        {/* Outer Glow Halo for Selected or Bottleneck or Margin */}
-        {(isSelected || isBottleneck || isMargin) && (
-          <mesh ref={glowMeshRef}>
-            <sphereGeometry args={[isMargin ? 1.6 : 1.5, 16, 16]} />
-            <meshBasicMaterial
-              color={isBottleneck ? '#EF4444' : isMargin ? '#387BFF' : '#1D63FF'}
-              transparent
-              opacity={0.2}
-              wireframe
-            />
-          </mesh>
-        )}
-
+      <group
+        onClick={(e) => {
+          e.stopPropagation();
+          selectActivity(activity.id);
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHoveredLocal(true);
+          setHoveredActivity(activity.id);
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOut={() => {
+          setHoveredLocal(false);
+          setHoveredActivity(null);
+          document.body.style.cursor = 'auto';
+        }}
+      >
         {/* Main 3D Interactive Mesh */}
         <mesh
           ref={meshRef}
-          onClick={(e) => {
-            e.stopPropagation();
-            selectActivity(activity.id);
-          }}
-          onPointerOver={(e) => {
-            e.stopPropagation();
-            setHoveredLocal(true);
-            setHoveredActivity(activity.id);
-            document.body.style.cursor = 'pointer';
-          }}
-          onPointerOut={() => {
-            setHoveredLocal(false);
-            setHoveredActivity(null);
-            document.body.style.cursor = 'auto';
-          }}
+          position={isMargin ? [0, 0, -0.2] : [0, 0, 0]}
         >
           {isMargin ? (
-            <octahedronGeometry args={[1.2, 0]} />
+            <extrudeGeometry
+              args={[
+                chevronShape,
+                { depth: 0.5, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04 },
+              ]}
+            />
           ) : (
             <boxGeometry args={[boxWidth, boxHeight, boxDepth]} />
           )}
@@ -136,94 +134,183 @@ export const Node3D: React.FC<Node3DProps> = ({ activity }) => {
           <meshStandardMaterial
             color={baseColor}
             emissive={emissiveColor}
-            emissiveIntensity={emissiveIntensity}
-            roughness={0.2}
-            metalness={0.8}
+            emissiveIntensity={isDimmed ? 0.02 : emissiveIntensity}
+            roughness={isDimmed ? 0.9 : 0.25}
+            metalness={isDimmed ? 0.1 : 0.7}
+            transparent={true}
+            opacity={isDimmed ? 0.18 : 1.0}
           />
         </mesh>
 
-        {/* Wireframe border cage for high tech cyber aesthetic */}
-        <mesh position={[0, 0, 0]}>
-          {isMargin ? (
-            <octahedronGeometry args={[1.22, 0]} />
-          ) : (
-            <boxGeometry args={[boxWidth + 0.02, boxHeight + 0.02, boxDepth + 0.02]} />
-          )}
-          <meshBasicMaterial
-            color={
-              isBottleneck
-                ? '#EF4444'
-                : isSelected
-                ? '#8AB8FF'
-                : isMargin
-                ? '#387BFF'
-                : isSupport
-                ? '#2C374B'
-                : '#1D63FF'
-            }
-            wireframe
-            transparent
-            opacity={isSelected || isHovered || hoveredLocal ? 0.9 : 0.35}
-          />
-        </mesh>
-
-        {/* Floating Label and Tooltip HTML Overlay */}
-        <Html
-          position={[0, isSupport ? 0.95 : 1.1, 0]}
-          center
-          distanceFactor={18}
-          className="pointer-events-none select-none"
-        >
-          <div className="flex flex-col items-center">
-            {/* Primary Pill Badge */}
-            <div
-              className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-bold tracking-wider uppercase border shadow-lg transition-all duration-300 backdrop-blur-md ${
-                isSelected
-                  ? 'bg-[#1D63FF] text-white border-[#8AB8FF] shadow-[0_0_15px_rgba(29,99,255,0.6)] scale-110'
-                  : isBottleneck
-                  ? 'bg-[#EF4444]/20 text-[#EF4444] border-[#EF4444]/60 shadow-[0_0_12px_rgba(239,68,68,0.4)]'
-                  : isMargin
-                  ? 'bg-[#1B2436]/90 text-[#8AB8FF] border-[#387BFF]/50 shadow-[0_0_12px_rgba(56,123,255,0.4)]'
-                  : 'bg-[#0D1322]/90 text-[#C5D0DE] border-[#2C374B]'
-              }`}
+        {/* 1. Support Activities: Native WebGL 3D Text on horizontal slab (Never wraps or collides!) */}
+        {isSupport && (
+          <group position={[-3.9, 0, 0.25]} visible={!isDimmed || isSelected}>
+            <Text
+              position={[0, 0, 0]}
+              fontSize={0.22}
+              color="#A5B4FC"
+              anchorX="left"
+              anchorY="middle"
+              characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789- •&"
             >
-              <span>{activity.code}</span>
-            </div>
-
-            {/* Title preview */}
-            <span
-              className={`mt-1 text-[11px] font-semibold whitespace-nowrap px-2 py-0.5 rounded transition-all duration-200 ${
-                isSelected
-                  ? 'text-[#8AB8FF] bg-[#050508]/80'
-                  : isHovered || hoveredLocal
-                  ? 'text-white bg-[#0D1322]/90 shadow'
-                  : 'text-[#8FA0B5] bg-[#050508]/60'
-              }`}
+              {activity.code}
+            </Text>
+            <Text
+              position={[0.9, 0, 0]}
+              fontSize={0.2}
+              color="#FFFFFF"
+              anchorX="left"
+              anchorY="middle"
+              characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789- •&"
             >
-              {activity.name.length > 24 ? activity.name.slice(0, 22) + '...' : activity.name}
-            </span>
+              {`•  ${activity.name}`}
+            </Text>
+          </group>
+        )}
 
-            {/* Hover Tooltip Card */}
-            {(isHovered || hoveredLocal) && !isSelected && (
-              <div className="mt-2 p-2.5 rounded-lg bg-[#0D1322]/95 border border-[#1D63FF]/50 shadow-2xl backdrop-blur-xl text-left w-56 animate-in fade-in zoom-in duration-150">
-                <div className="flex items-center justify-between text-[10px] text-[#8FA0B5] mb-1 font-mono">
-                  <span className="uppercase text-[#8AB8FF]">{activity.category}</span>
-                  <span>SLA: {activity.metrics.slaPct}%</span>
-                </div>
-                <div className="text-[12px] font-bold text-[#F2F5F8] leading-snug mb-1">
-                  {activity.name}
-                </div>
-                <div className="text-[10px] text-[#C5D0DE] line-clamp-2 mb-2">
-                  {activity.shortDescription}
-                </div>
-                <div className="flex items-center justify-between pt-1 border-t border-[#2C374B] text-[10px] font-mono">
-                  <span className="text-[#8FA0B5]">Eficiencia</span>
-                  <span className="text-[#10B981] font-bold">{activity.metrics.efficiencyScore}%</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </Html>
+        {/* 2. Primary Activities: Native WebGL 3D Text on vertical pillar (Clean, centered, no collisions!) */}
+        {!isSupport && !isMargin && (
+          <group position={[0, 0, 0.25]} visible={!isDimmed || isSelected}>
+            <Text
+              position={[0, 0.65, 0]}
+              fontSize={0.24}
+              color="#38BDF8"
+              anchorX="center"
+              anchorY="middle"
+              characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
+            >
+              {activity.code}
+            </Text>
+            <Text
+              position={[0, -0.05, 0]}
+              fontSize={0.16}
+              lineHeight={1.2}
+              textAlign="center"
+              color="#FFFFFF"
+              anchorX="center"
+              anchorY="middle"
+              characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 "
+            >
+              {getPrimaryShortLabel()}
+            </Text>
+            <Text
+              position={[0, -0.75, 0]}
+              fontSize={0.14}
+              color="#10B981"
+              anchorX="center"
+              anchorY="middle"
+              characters="0123456789%Efic. "
+            >
+              {`${activity.metrics.efficiencyScore}%`}
+            </Text>
+          </group>
+        )}
+
+        {/* 3. Margin Arrow: Native WebGL 3D HUD & Typography on Chevron face */}
+        {isMargin && (
+          <group position={[1.30, -0.1, 0.38]} visible={!isDimmed || isSelected}>
+            {/* Dark glass HUD plate with illuminated border */}
+            <mesh position={[0, 0, 0.005]}>
+              <planeGeometry args={[2.0, 3.6]} />
+              <meshStandardMaterial
+                color="#060C1B"
+                roughness={0.25}
+                metalness={0.7}
+                transparent
+                opacity={0.88}
+              />
+            </mesh>
+            <lineSegments position={[0, 0, 0.01]}>
+              <edgesGeometry args={[new THREE.PlaneGeometry(2.0, 3.6)]} />
+              <lineBasicMaterial color="#F59E0B" transparent opacity={0.65} />
+            </lineSegments>
+
+            {/* Typography hierarchy with perfect contrast & spacing */}
+            <Text
+              position={[0, 1.42, 0.02]}
+              fontSize={0.15}
+              color="#FBBF24"
+              anchorX="center"
+              anchorY="middle"
+              letterSpacing={0.06}
+            >
+              VAL-00 • MARGEN
+            </Text>
+            <Text
+              position={[0, 1.16, 0.02]}
+              fontSize={0.16}
+              color="#FFFFFF"
+              anchorX="center"
+              anchorY="middle"
+            >
+              Margen de Valor
+            </Text>
+            <Text
+              position={[0, 0.65, 0.02]}
+              fontSize={0.42}
+              color="#34D399"
+              anchorX="center"
+              anchorY="middle"
+            >
+              {`+${simulation.systemicMarginPct}%`}
+            </Text>
+            <Text
+              position={[0, 0.32, 0.02]}
+              fontSize={0.12}
+              color="#94A3B8"
+              anchorX="center"
+              anchorY="middle"
+            >
+              Margen Operativo Bruto
+            </Text>
+            <Text
+              position={[0, -0.05, 0.02]}
+              fontSize={0.17}
+              color="#FDE047"
+              anchorX="center"
+              anchorY="middle"
+            >
+              {`ROI TI: ${activity.kpis[2]?.value ? activity.kpis[2].value.replace('ROI', '').trim() : '284%'}`}
+            </Text>
+            <Text
+              position={[0, -0.38, 0.02]}
+              fontSize={0.15}
+              color="#38BDF8"
+              anchorX="center"
+              anchorY="middle"
+            >
+              {`Retención: ${activity.kpis[1]?.value || '138%'}`}
+            </Text>
+            <Text
+              position={[0, -0.70, 0.02]}
+              fontSize={0.14}
+              color="#C084FC"
+              anchorX="center"
+              anchorY="middle"
+            >
+              {`SLA: ${simulation.avgSlaPct}%`}
+            </Text>
+            <Text
+              position={[0, -1.10, 0.02]}
+              fontSize={0.11}
+              color="#10B981"
+              anchorX="center"
+              anchorY="middle"
+              letterSpacing={0.05}
+            >
+              ● RESULTADO SISTÉMICO
+            </Text>
+            <Text
+              position={[0, -1.40, 0.02]}
+              fontSize={0.10}
+              color="#F59E0B"
+              anchorX="center"
+              anchorY="middle"
+            >
+              Clic para auditar detalles
+            </Text>
+          </group>
+        )}
       </group>
     </Float>
   );
