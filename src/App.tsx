@@ -36,37 +36,22 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-        {/* Sector Briefing Banner */}
-        <div className="relative p-6 rounded-2xl bg-gradient-to-r from-[#0D1322] via-[#1B2436]/90 to-[#0D1322] border border-[#2C374B] shadow-2xl overflow-hidden">
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#1D63FF]/15 rounded-full blur-3xl pointer-events-none" />
+        {/* Sector Briefing Banner (Minimalist, zero badges, low visual noise) */}
+        <div className="p-5 sm:p-6 rounded-xl bg-[#070B14]/95 border border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white">
+              {sector.title}
+            </h1>
+            <p className="text-sm text-slate-400 mt-1 leading-relaxed max-w-3xl">
+              {sector.tagline}
+            </p>
+          </div>
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#1D63FF] animate-pulse" />
-                <span className="text-xs font-mono font-bold text-[#8AB8FF] uppercase tracking-wider">
-                  {sector.badge}
-                </span>
-                <span className="text-xs font-mono text-[#8FA0B5]">
-                  • Modelo Sistémico Unificado
-                </span>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#F2F5F8]">
-                {sector.title}
-              </h2>
-              <p className="text-xs sm:text-sm text-[#C5D0DE] mt-1.5 max-w-3xl leading-relaxed">
-                {sector.tagline}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
-              <div className="p-3 rounded-xl bg-[#050508]/60 border border-[#2C374B] text-right">
-                <span className="text-[10px] font-mono text-[#8FA0B5] block">Meta Estratégica GSTI</span>
-                <span className="text-xs font-mono font-bold text-[#10B981]">
-                  {sector.id === 'ai' ? 'ROI +34.8% en Inferencia' : 'MTTR < 7 min con SOAR'}
-                </span>
-              </div>
-            </div>
+          <div className="flex flex-col sm:items-end justify-center self-start sm:self-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/80">
+            <span className="text-xs text-slate-500 font-medium">Meta Estratégica</span>
+            <span className="text-sm font-semibold text-slate-200 mt-0.5">
+              {sector.id === 'ai' ? 'ROI +34.8% en Inferencia' : 'MTTR < 7 min con SOAR'}
+            </span>
           </div>
         </div>
 
@@ -76,14 +61,11 @@ export const App: React.FC = () => {
             {/* 3D Scene Section */}
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#1D63FF]" />
-                  <h3 className="text-sm font-mono font-bold tracking-wider uppercase text-[#8FA0B5]">
-                    Escenario 3D Interactivo de la Cadena de Valor
-                  </h3>
-                </div>
-                <span className="text-[11px] font-mono text-[#8FA0B5]">
-                  Órbita 360° • Clic en nodo para simular
+                <h2 className="text-sm font-bold text-white tracking-wide uppercase">
+                  Escenario 3D de la Cadena de Valor
+                </h2>
+                <span className="text-xs text-slate-400 font-medium hidden sm:inline">
+                  Órbita 360° • Clic en nodo para detalles
                 </span>
               </div>
 
@@ -96,12 +78,9 @@ export const App: React.FC = () => {
 
             {/* 2D Porter Matrix & Systemic Archetype Section */}
             <section className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#387BFF]" />
-                <h3 className="text-sm font-mono font-bold tracking-wider uppercase text-[#8FA0B5]">
-                  Matriz Porter Integrada con ITIL 4 & Dinámica Sistémica
-                </h3>
-              </div>
+              <h2 className="font-mono text-xs uppercase tracking-wider text-slate-400">
+                Matriz Porter & ITIL 4
+              </h2>
               <ErrorBoundary fallbackTitle="Error al cargar la Matriz de Porter">
                 <PorterMatrix2D />
               </ErrorBoundary>
@@ -109,12 +88,9 @@ export const App: React.FC = () => {
 
             {/* Real-Time Analytics & Projection Section */}
             <section className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#10B981]" />
-                <h3 className="text-sm font-mono font-bold tracking-wider uppercase text-[#8FA0B5]">
-                  Dashboard de Métricas, Benchmarking & Simulación en Vivo
-                </h3>
-              </div>
+              <h2 className="font-mono text-xs uppercase tracking-wider text-slate-400">
+                Dashboard de Métricas & Simulación
+              </h2>
               <ErrorBoundary fallbackTitle="Error al cargar el Dashboard de Analítica">
                 <AnalyticsDashboard />
               </ErrorBoundary>

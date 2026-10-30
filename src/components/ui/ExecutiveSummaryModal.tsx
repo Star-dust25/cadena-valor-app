@@ -1,14 +1,5 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  X,
-  Download,
-  CheckCircle2,
-  Sparkles,
-  BookOpen,
-  Workflow,
-  ShieldCheck,
-} from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useValueChainStore,
@@ -65,118 +56,120 @@ export const ExecutiveSummaryModal: React.FC = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    toast.success('Reporte Ejecutivo Exportado Exitosamente', {
-      description: `Documento generado en formato JSON con métricas de ITIL 4 y Porter para ${sector.name}.`,
-      duration: 4000,
+    toast.success('Reporte Exportado', {
+      description: `Archivo JSON generado con las métricas de ${sector.name}.`,
+      duration: 3500,
     });
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 md:p-10 flex items-center justify-center">
+      <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 md:p-8 flex items-center justify-center">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setIsSummaryModalOpen(false)}
-          className="fixed inset-0 bg-[#050508]/80 backdrop-blur-md"
+          className="fixed inset-0 bg-[#05070E]/85 backdrop-blur-md"
         />
 
         {/* Modal Window */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.97, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-4xl max-h-[90vh] bg-[#0D1322] border border-[#2C374B] rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10"
+          exit={{ opacity: 0, scale: 0.97, y: 16 }}
+          transition={{ duration: 0.2 }}
+          className="relative w-full max-w-4xl max-h-[88vh] bg-[#070B14] border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10"
         >
-          {/* Header */}
-          <div className="px-6 py-5 border-b border-[#2C374B] bg-[#050508]/60 flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#1D63FF]/20 border border-[#1D63FF]/40 flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-[#8AB8FF]" />
-              </div>
-              <div>
-                <span className="text-[11px] font-mono font-bold text-[#8AB8FF] uppercase">
-                  Gestión del Servicio de TI (GSTI) • Informe Académico & Ejecutivo
-                </span>
-                <h2 className="text-lg sm:text-xl font-extrabold text-[#F2F5F8] tracking-tight">
-                  {sector.title} — Arquetipo Sistémico de Cadena de Valor
-                </h2>
-              </div>
+          {/* Header (Clean, typographical, ZERO icons, ZERO badges) */}
+          <div className="px-6 py-5 border-b border-slate-800/80 bg-[#090D18] flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-bold text-white tracking-tight">
+                Resumen Ejecutivo
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {sector.name} — Modelo de Cadena de Valor e ITIL 4
+              </p>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportReport}
-                className="px-3 py-1.5 rounded-lg bg-[#1D63FF] hover:bg-[#387BFF] text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all active:scale-95"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>Exportar JSON</span>
+                Exportar JSON
               </button>
               <button
                 onClick={() => setIsSummaryModalOpen(false)}
-                className="p-1.5 rounded-lg bg-[#1B2436] hover:bg-[#2C374B] text-[#8FA0B5] hover:text-white transition-all"
+                className="h-9 px-3 rounded-lg bg-[#0D1322] hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition-all"
               >
-                <X className="w-5 h-5" />
+                Cerrar
               </button>
             </div>
           </div>
 
-          {/* Body Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs text-[#C5D0DE]">
-            {/* 1. Executive Synopsis */}
-            <div className="p-4 rounded-xl bg-[#1B2436]/60 border border-[#2C374B] space-y-2">
-              <div className="flex items-center gap-2 text-sm font-bold text-white font-mono">
-                <Sparkles className="w-4 h-4 text-[#1D63FF]" />
-                1. Contexto Estratégico y Planteamiento del Problema
-              </div>
-              <p className="leading-relaxed">{sector.overview}</p>
-              <div className="p-3 rounded-lg bg-[#050508]/50 border border-[#2C374B] mt-2">
-                <strong className="text-white font-mono block mb-0.5">Meta Estratégica GSTI:</strong>
-                <p className="text-[#8AB8FF]">{sector.strategicObjective}</p>
+          {/* Body Content (Clean Editorial Layout - Zero decorative icons) */}
+          <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-8 text-sm text-slate-300">
+            {/* 1. Contexto Estratégico */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                1. Contexto Estratégico y Planteamiento
+              </h3>
+              <p className="text-slate-300 leading-relaxed text-sm">
+                {sector.overview}
+              </p>
+              <div className="p-4 rounded-xl bg-[#0B101D] border-l-2 border-blue-500 border-y border-r border-slate-800/80 mt-2">
+                <span className="text-xs font-semibold text-slate-400 block mb-1">
+                  Meta Estratégica GSTI
+                </span>
+                <p className="text-sm text-slate-200 font-medium">
+                  {sector.strategicObjective}
+                </p>
               </div>
             </div>
 
-            {/* 2. Systemic Archetype Details (Peter Senge) */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-bold text-white font-mono">
-                <Workflow className="w-4 h-4 text-[#387BFF]" />
-                2. Diagnóstico de Dinámica de Sistemas (Arquetipo de Peter Senge)
-              </div>
-              <div className="p-4 rounded-xl bg-[#050508]/40 border border-[#2C374B] space-y-3">
+            {/* 2. Dinámica de Sistemas (Peter Senge) */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                2. Dinámica de Sistemas (Arquetipo de Peter Senge)
+              </h3>
+              
+              <div className="p-5 rounded-xl bg-[#0B101D] border border-slate-800/80 space-y-4">
                 <div>
-                  <span className="text-xs font-bold text-[#8AB8FF] block font-mono">
-                    {sector.archetype.name} ({sector.archetype.sengeType})
-                  </span>
-                  <p className="mt-1 leading-relaxed text-[#C5D0DE]">
+                  <h4 className="text-sm font-semibold text-white">
+                    {sector.archetype.name}
+                  </h4>
+                  <p className="text-xs text-blue-400 font-mono mt-0.5">
+                    {sector.archetype.sengeType}
+                  </p>
+                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">
                     {sector.archetype.description}
                   </p>
                 </div>
 
-                {/* Loops */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                  <div className="p-3 rounded-lg bg-[#1B2436]/40 border border-[#2C374B]">
-                    <span className="text-[11px] font-mono font-bold text-[#387BFF] block mb-1">
-                      Bucles Reforzadores (Virtuosos - Crecimiento):
+                {/* Loops Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                  <div className="p-3.5 rounded-lg bg-[#070B14] border border-slate-800/90 space-y-2">
+                    <span className="text-xs font-semibold text-blue-400 block">
+                      Bucles Reforzadores (Crecimiento)
                     </span>
-                    <ul className="space-y-1.5">
+                    <ul className="space-y-2 text-xs">
                       {sector.archetype.reinforcingLoops.map((r) => (
-                        <li key={r.id} className="text-[11px]">
+                        <li key={r.id} className="text-slate-300">
                           <strong className="text-white">{r.code}:</strong> {r.description}
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  <div className="p-3 rounded-lg bg-[#1B2436]/40 border border-[#2C374B]">
-                    <span className="text-[11px] font-mono font-bold text-[#F59E0B] block mb-1">
-                      Bucles Compensadores (Fricción y Techos de Crecimiento):
+                  <div className="p-3.5 rounded-lg bg-[#070B14] border border-slate-800/90 space-y-2">
+                    <span className="text-xs font-semibold text-amber-400 block">
+                      Bucles Compensadores (Fricción)
                     </span>
-                    <ul className="space-y-1.5">
+                    <ul className="space-y-2 text-xs">
                       {sector.archetype.balancingLoops.map((b) => (
-                        <li key={b.id} className="text-[11px]">
+                        <li key={b.id} className="text-slate-300">
                           <strong className="text-white">{b.code}:</strong> {b.description}
                         </li>
                       ))}
@@ -185,14 +178,14 @@ export const ExecutiveSummaryModal: React.FC = () => {
                 </div>
 
                 {/* Leverage Points */}
-                <div className="pt-2">
-                  <span className="text-[11px] font-mono font-bold text-[#10B981] block mb-1.5">
-                    Puntos de Apalancamiento Sistémico Recomendados:
+                <div className="pt-2 border-t border-slate-800/80">
+                  <span className="text-xs font-semibold text-emerald-400 block mb-2">
+                    Puntos de Apalancamiento Sistémico
                   </span>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {sector.archetype.leveragePoints.map((lev, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-[11px]">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981] shrink-0 mt-0.5" />
+                      <div key={idx} className="text-xs text-slate-300 flex items-start gap-2">
+                        <span className="text-emerald-400 font-bold">•</span>
                         <div>
                           <strong className="text-white">{lev.title}:</strong> {lev.description}
                         </div>
@@ -203,34 +196,33 @@ export const ExecutiveSummaryModal: React.FC = () => {
               </div>
             </div>
 
-            {/* 3. Porter & ITIL 4 Cross-Matrix Summary Table */}
+            {/* 3. Matriz de Integración Porter vs ITIL 4 */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-bold text-white font-mono">
-                <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                3. Matriz de Integración Porter vs Cadena de Valor ITIL 4
-              </div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                3. Integración Porter vs Cadena de Valor ITIL 4
+              </h3>
 
-              <div className="overflow-x-auto rounded-xl border border-[#2C374B]">
-                <table className="w-full text-left font-mono text-[11px]">
-                  <thead className="bg-[#1B2436] text-[#8FA0B5] uppercase border-b border-[#2C374B]">
+              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-[#0B101D]">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#070B14] text-slate-400 uppercase text-[11px] font-semibold border-b border-slate-800">
                     <tr>
-                      <th className="py-2.5 px-3">Código</th>
-                      <th className="py-2.5 px-3">Eslabón Porter</th>
-                      <th className="py-2.5 px-3">Etapa ITIL 4</th>
-                      <th className="py-2.5 px-3">Práctica ITIL</th>
-                      <th className="py-2.5 px-3 text-right">Presupuesto</th>
-                      <th className="py-2.5 px-3 text-right">SLA</th>
+                      <th className="py-3 px-3.5">Código</th>
+                      <th className="py-3 px-3.5">Eslabón Porter</th>
+                      <th className="py-3 px-3.5">Etapa ITIL 4</th>
+                      <th className="py-3 px-3.5">Práctica ITIL</th>
+                      <th className="py-3 px-3.5 text-right">Presupuesto</th>
+                      <th className="py-3 px-3.5 text-right">SLA</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#2C374B]/50 bg-[#0D1322]">
+                  <tbody className="divide-y divide-slate-800/60 font-sans">
                     {sector.activities.map((a) => (
-                      <tr key={a.id} className="hover:bg-[#1B2436]/40 transition-colors">
-                        <td className="py-2 px-3 font-bold text-[#8AB8FF]">{a.code}</td>
-                        <td className="py-2 px-3 text-[#F2F5F8] font-sans font-medium">{a.name}</td>
-                        <td className="py-2 px-3 text-[#C5D0DE]">{a.itilStage}</td>
-                        <td className="py-2 px-3 text-[#8FA0B5] text-[10px]">{a.itilPractice}</td>
-                        <td className="py-2 px-3 text-right text-white">${a.metrics.budgetUSD}K</td>
-                        <td className="py-2 px-3 text-right text-[#10B981]">{a.metrics.slaPct}%</td>
+                      <tr key={a.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-2.5 px-3.5 font-mono font-bold text-blue-400">{a.code}</td>
+                        <td className="py-2.5 px-3.5 text-white font-medium">{a.name}</td>
+                        <td className="py-2.5 px-3.5 text-slate-300">{a.itilStage}</td>
+                        <td className="py-2.5 px-3.5 text-slate-400 text-xs">{a.itilPractice}</td>
+                        <td className="py-2.5 px-3.5 text-right font-mono text-white">${a.metrics.budgetUSD}K</td>
+                        <td className="py-2.5 px-3.5 text-right font-mono text-emerald-400">{a.metrics.slaPct}%</td>
                       </tr>
                     ))}
                   </tbody>
@@ -239,14 +231,14 @@ export const ExecutiveSummaryModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="px-6 py-4 border-t border-[#2C374B] bg-[#050508]/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[#8FA0B5]">
-            <span>GSTI • Modelo Académico Evaluativo para Entornos Corporativos</span>
+          {/* Footer (Clean, simple, no clutter) */}
+          <div className="px-6 py-4 border-t border-slate-800/80 bg-[#090D18] flex items-center justify-between text-xs text-slate-400">
+            <span>Caso Práctico 02 • GSTI</span>
             <button
               onClick={() => setIsSummaryModalOpen(false)}
-              className="px-4 py-2 rounded-lg bg-[#1B2436] hover:bg-[#2C374B] text-white font-semibold transition-all active:scale-95"
+              className="h-9 px-4 rounded-lg bg-[#0D1322] hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-medium transition-all"
             >
-              Cerrar Resumen
+              Cerrar
             </button>
           </div>
         </motion.div>

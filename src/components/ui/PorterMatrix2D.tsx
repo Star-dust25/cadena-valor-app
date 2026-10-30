@@ -1,12 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
-  RotateCw,
-  Scale,
-  Sparkles,
-  Layers,
-  Cpu,
-  ShieldCheck,
   SearchX,
   RotateCcw,
 } from 'lucide-react';
@@ -18,7 +12,7 @@ import {
 } from '../../store/useValueChainStore';
 import type { ActivityNode } from '../../types/valueChain';
 
-type PresentationStyle = 'apple' | 'microsoft' | 'utp_classic' | 'neural';
+type PresentationStyle = 'neural' | 'apple' | 'microsoft';
 
 export const PorterMatrix2D: React.FC = () => {
   const sector = useActiveSectorData();
@@ -29,7 +23,7 @@ export const PorterMatrix2D: React.FC = () => {
   const setFilterType = useValueChainStore((s) => s.setFilterType);
   const setSearchQuery = useValueChainStore((s) => s.setSearchQuery);
 
-  const [styleMode, setStyleMode] = useState<PresentationStyle>('apple');
+  const [styleMode, setStyleMode] = useState<PresentationStyle>('neural');
 
   const simResult = useSimulationResult();
   const { activeIds, isFilteringActive, matchCount } = useFilteredActivityIds();
@@ -58,51 +52,29 @@ export const PorterMatrix2D: React.FC = () => {
     return loop ? loop.nodes.includes(nodeId) : false;
   };
 
-  // Color schemes based on style mode
-  const getContainerBg = () => {
-    switch (styleMode) {
-      case 'apple':
-        return 'bg-[#FAFBFD] text-slate-900 border-slate-300 shadow-2xl';
-      case 'microsoft':
-        return 'bg-[#F8FAFC] text-slate-900 border-slate-300 shadow-2xl';
-      case 'utp_classic':
-        return 'bg-[#FFFBEB] text-slate-950 border-amber-400 shadow-2xl';
-      case 'neural':
-      default:
-        return 'bg-[#0D1322]/95 text-[#F2F5F8] border-[#2C374B] shadow-2xl';
-    }
-  };
+  // Color schemes based on style mode - unified on dark obsidian canvas to eliminate harsh glare and poor contrast
+  const getContainerBg = () => 'bg-[#090D18] text-[#F2F5F8] border-slate-800 shadow-xl';
 
   const getMarginArrowStyle = () => {
     switch (styleMode) {
       case 'apple':
         return {
-          fill: '#F59E0B',
-          stroke: '#D97706',
-          textColor: 'text-amber-950',
-          badgeBg: 'bg-white/80 text-amber-900',
+          fill: '#0B101D',
+          stroke: '#F59E0B',
+          headerColor: 'text-amber-400',
         };
       case 'microsoft':
         return {
-          fill: '#0284C7',
-          stroke: '#0369A1',
-          textColor: 'text-white',
-          badgeBg: 'bg-white/20 text-white',
-        };
-      case 'utp_classic':
-        return {
-          fill: '#1D4ED8',
-          stroke: '#1E3A8A',
-          textColor: 'text-white',
-          badgeBg: 'bg-yellow-400 text-blue-950 font-bold',
+          fill: '#0B101D',
+          stroke: '#0284C7',
+          headerColor: 'text-sky-400',
         };
       case 'neural':
       default:
         return {
-          fill: '#1D63FF',
-          stroke: '#8AB8FF',
-          textColor: 'text-white',
-          badgeBg: 'bg-[#0D1322]/80 text-[#8AB8FF]',
+          fill: '#0B101D',
+          stroke: '#1E293B',
+          headerColor: 'text-blue-400',
         };
     }
   };
@@ -111,166 +83,125 @@ export const PorterMatrix2D: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* 1. Academic Header styled directly like UTP Lecture Slide */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#0D1322] via-[#1B2436] to-[#0D1322] border border-[#2C374B] shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        {/* Left: UTP Case Title & Logos */}
-        <div className="flex items-center gap-3.5">
-          {/* UTP Logo Badge */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white shadow-md border border-slate-200">
-            <div className="w-7 h-7 rounded bg-[#C8102E] flex items-center justify-center text-white font-black text-xs tracking-tighter shadow-sm">
-              UTP
-            </div>
-            <div className="text-left leading-tight hidden sm:block">
-              <span className="text-[10px] font-bold text-slate-800 uppercase block">Universidad Tecnológica</span>
-              <span className="text-[9px] font-medium text-slate-500 block">del Perú • GSTI</span>
-            </div>
+      {/* 1. Academic Header - Minimalist Editorial (Zero UTP, Zero Badges, Zero Icons) */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#090D18] border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Left: Sector & Title */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 font-mono text-xs text-slate-400">
+            <span className="uppercase tracking-wider">{sector.badge}</span>
+            <span className="text-slate-600">•</span>
+            <span>Gestión Estratégica GSTI</span>
           </div>
-
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#1D63FF]/20 text-[#8AB8FF] border border-[#1D63FF]/30">
-                TRANSFORMACIÓN: CASO DE ÉXITO
-              </span>
-              <span className="text-xs text-[#8FA0B5] font-mono">
-                {sector.badge}
-              </span>
-            </div>
-            <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight flex items-center gap-2 mt-0.5">
-              <span>Cadena de valor de {sector.name}</span>
-              {sector.id === 'ai' ? (
-                <Cpu className="w-5 h-5 text-[#387BFF]" />
-              ) : (
-                <ShieldCheck className="w-5 h-5 text-[#8AB8FF]" />
-              )}
-            </h2>
-          </div>
+          <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white">
+            Cadena de valor de {sector.name}
+          </h3>
+          <p className="text-xs text-slate-400 max-w-xl">
+            Flujo operacional de 5 eslabones primarios y 4 líneas transversales de apoyo
+          </p>
         </div>
 
         {/* Right: Style Selector Toggle */}
-        <div className="flex flex-wrap items-center gap-2 bg-[#050508]/70 p-1.5 rounded-xl border border-[#2C374B]">
-          <span className="text-[11px] font-mono text-[#8FA0B5] px-2 flex items-center gap-1">
-            <Layers className="w-3.5 h-3.5 text-[#387BFF]" />
-            Estilo:
-          </span>
+        <div className="p-1 rounded-lg bg-[#050811] border border-slate-800 flex items-center gap-1 text-xs shrink-0">
+          <span className="text-slate-400 font-medium px-2.5 hidden sm:inline">Vista:</span>
           <button
-            onClick={() => setStyleMode('apple')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-              styleMode === 'apple'
-                ? 'bg-amber-400 text-slate-950 font-bold shadow-md'
-                : 'text-[#8FA0B5] hover:text-white hover:bg-[#1B2436]'
+            onClick={() => setStyleMode('neural')}
+            className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+              styleMode === 'neural'
+                ? 'bg-blue-600 text-white font-semibold shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            Post-its (Apple)
+            Oscuro
+          </button>
+          <button
+            onClick={() => setStyleMode('apple')}
+            className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+              styleMode === 'apple'
+                ? 'bg-blue-600 text-white font-semibold shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Post-its
           </button>
           <button
             onClick={() => setStyleMode('microsoft')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-md font-medium transition-all ${
               styleMode === 'microsoft'
-                ? 'bg-sky-500 text-white font-bold shadow-md'
-                : 'text-[#8FA0B5] hover:text-white hover:bg-[#1B2436]'
+                ? 'bg-blue-600 text-white font-semibold shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            Columnas (Microsoft)
-          </button>
-          <button
-            onClick={() => setStyleMode('utp_classic')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-              styleMode === 'utp_classic'
-                ? 'bg-yellow-400 text-blue-950 font-bold shadow-md'
-                : 'text-[#8FA0B5] hover:text-white hover:bg-[#1B2436]'
-            }`}
-          >
-            TIC Amarillo (UTP)
-          </button>
-          <button
-            onClick={() => setStyleMode('neural')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-              styleMode === 'neural'
-                ? 'bg-[#1D63FF] text-white font-bold shadow-md'
-                : 'text-[#8FA0B5] hover:text-white hover:bg-[#1B2436]'
-            }`}
-          >
-            Neural Dark
+            Columnas
           </button>
         </div>
       </div>
 
       {/* 2. Systemic Loops Indicator (Peter Senge) */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-1 text-xs">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#387BFF]" />
-          <span className="text-[#8FA0B5] font-mono text-[11px]">
-            Arquetipo: <strong className="text-white">{sector.archetype.name}</strong>
-          </span>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-1 text-xs">
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <span className="text-slate-400">Arquetipo sistémico:</span>
+          <span className="font-semibold text-white">{sector.archetype.name}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] font-mono text-[#8FA0B5] mr-1">Resaltar Bucle Sistémico:</span>
+          <span className="font-mono text-xs text-slate-400 mr-1">Resaltar bucle:</span>
           {sector.archetype.reinforcingLoops.map((loop) => (
             <button
               key={loop.id}
               onClick={() => setHighlightedLoop(highlightedLoopId === loop.id ? null : loop.id)}
-              className={`px-2 py-0.5 rounded text-[11px] font-mono font-bold flex items-center gap-1 border transition-all ${
+              className={`px-2.5 py-1 rounded-md font-mono text-xs font-semibold border transition-all ${
                 highlightedLoopId === loop.id
-                  ? 'bg-[#1D63FF] text-white border-[#8AB8FF] shadow-[0_0_12px_rgba(29,99,255,0.5)]'
-                  : 'bg-[#0D1322] text-[#8AB8FF] border-[#2C374B] hover:border-[#1D63FF]'
+                  ? 'bg-blue-600 text-white border-blue-500 shadow-sm'
+                  : 'bg-[#090D18] text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'
               }`}
             >
-              <RotateCw className="w-3 h-3 text-[#387BFF]" />
-              <span>{loop.id}</span>
+              {loop.id}
             </button>
           ))}
           {sector.archetype.balancingLoops.map((loop) => (
             <button
               key={loop.id}
               onClick={() => setHighlightedLoop(highlightedLoopId === loop.id ? null : loop.id)}
-              className={`px-2 py-0.5 rounded text-[11px] font-mono font-bold flex items-center gap-1 border transition-all ${
+              className={`px-2.5 py-1 rounded-md font-mono text-xs font-semibold border transition-all ${
                 highlightedLoopId === loop.id
-                  ? 'bg-[#F59E0B] text-black border-[#FCD34D] shadow-[0_0_12px_rgba(245,158,11,0.5)]'
-                  : 'bg-[#0D1322] text-[#F59E0B] border-[#2C374B] hover:border-[#F59E0B]'
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm'
+                  : 'bg-[#090D18] text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'
               }`}
             >
-              <Scale className="w-3 h-3 text-[#F59E0B]" />
-              <span>{loop.id}</span>
+              {loop.id}
             </button>
           ))}
         </div>
       </div>
 
-      {/* 3. The Iconic Porter Chevron Arrow Canvas */}
+      {/* 3. The Iconic Porter Chevron Canvas */}
       <div className={`p-4 sm:p-6 rounded-2xl border transition-all duration-300 overflow-x-auto ${getContainerBg()}`}>
-        <div className="min-w-[940px] flex items-stretch gap-2 relative">
+        <div className="min-w-[940px] flex items-stretch gap-3 relative">
           {/* Main Body of the Value Chain (Activities) */}
           <div className="flex-1 flex flex-col gap-6">
-            {/* --- ACTIVIDADES DE APOYO (4 Horizontal Stacked Rows) --- */}
+            {/* --- ACTIVIDADES DE APOYO (4 Horizontal Rows) --- */}
             <div className="space-y-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-1 pb-1 border-b border-indigo-500/20">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-md bg-[#6366F1] shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-                  <span
-                    className={`text-xs font-mono font-black uppercase tracking-wider ${
-                      styleMode === 'apple' || styleMode === 'microsoft' || styleMode === 'utp_classic'
-                        ? 'text-indigo-950 font-bold'
-                        : 'text-indigo-200'
-                    }`}
-                  >
-                    ACTIVIDADES DE APOYO (SECUNDARIAS)
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-2 pb-2 border-b border-slate-800">
+                <div className="flex items-center gap-2 font-mono text-xs">
+                  <span className="font-semibold uppercase tracking-wider text-slate-300">
+                    Actividades de Apoyo
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
-                    Sustento Transversal
+                  <span className="text-slate-600">•</span>
+                  <span className="text-slate-500 font-normal">
+                    Sustento transversal corporativo
                   </span>
                 </div>
-                <span className="text-[11px] font-mono opacity-70">
+                <div className="text-xs font-mono text-slate-500">
                   Infraestructura • RRHH • I+D • Compras
-                </span>
+                </div>
               </div>
 
               {/* Empty state when 0 results match */}
               {isFilteringActive && matchCount === 0 && (
-                <div className="p-8 rounded-xl bg-[#0D1322]/90 border border-[#2C374B] text-center space-y-3">
-                  <SearchX className="w-8 h-8 text-[#8FA0B5] mx-auto" />
+                <div className="p-8 rounded-xl bg-[#0B101D] border border-slate-800 text-center space-y-3">
+                  <SearchX className="w-8 h-8 text-slate-500 mx-auto" />
                   <h4 className="text-sm font-bold text-white">No se encontraron eslabones coincidentes</h4>
-                  <p className="text-xs text-[#8FA0B5]">
+                  <p className="text-xs text-slate-400">
                     No hay actividades que cumplan con los filtros o término de búsqueda seleccionado.
                   </p>
                   <button
@@ -278,7 +209,7 @@ export const PorterMatrix2D: React.FC = () => {
                       setFilterType('all');
                       setSearchQuery('');
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-[#1D63FF] hover:bg-[#387BFF] text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Restablecer Filtros</span>
@@ -304,28 +235,22 @@ export const PorterMatrix2D: React.FC = () => {
 
             {/* --- ACTIVIDADES PRIMARIAS (5 Vertical Columns Flowing Left to Right) --- */}
             <div className="space-y-2.5 pt-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-1 pb-1 border-b border-sky-500/20">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-md bg-[#0284C7] shadow-[0_0_8px_rgba(2,132,199,0.5)]" />
-                  <span
-                    className={`text-xs font-mono font-black uppercase tracking-wider ${
-                      styleMode === 'apple' || styleMode === 'microsoft' || styleMode === 'utp_classic'
-                        ? 'text-sky-950 font-bold'
-                        : 'text-sky-200'
-                    }`}
-                  >
-                    ACTIVIDADES PRIMARIAS (OPERACIONALES)
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-2 pb-2 border-b border-slate-800">
+                <div className="flex items-center gap-2 font-mono text-xs">
+                  <span className="font-semibold uppercase tracking-wider text-slate-300">
+                    Actividades Primarias
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-sky-500/15 text-sky-300 border border-sky-500/30">
-                    Flujo de Valor Secuencial
+                  <span className="text-slate-600">•</span>
+                  <span className="text-slate-500 font-normal">
+                    Flujo secuencial de valor
                   </span>
                 </div>
-                <span className="text-[11px] font-mono opacity-70">
-                  Logística Entrada ➔ Operaciones ➔ Salida ➔ Marketing ➔ Servicio
-                </span>
+                <div className="text-xs font-mono text-slate-500">
+                  Entrada → Operaciones → Salida → Comercial → Servicio
+                </div>
               </div>
 
-              <div className="grid grid-cols-5 gap-2 items-stretch">
+              <div className="grid grid-cols-5 gap-2.5 items-stretch">
                 {primaryActivities.map((act, idx) => (
                   <PrimaryColumnCard
                     key={act.id}
@@ -343,13 +268,13 @@ export const PorterMatrix2D: React.FC = () => {
             </div>
           </div>
 
-          {/* --- THE MARGEN CHEVRON ARROW (Iconic right-pointing arrowhead) --- */}
+          {/* --- THE MARGEN CHEVRON SCORECARD --- */}
           {marginActivity && (
             <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               onClick={() => selectActivity(marginActivity.id)}
-              className={`w-28 sm:w-36 shrink-0 relative flex items-center justify-center cursor-pointer group transition-all duration-300 ${
+              className={`w-32 sm:w-36 shrink-0 relative flex items-center justify-center cursor-pointer group transition-all duration-300 ${
                 isFilteringActive && !activeIds.has(marginActivity.id)
                   ? 'opacity-25 grayscale pointer-events-none'
                   : 'opacity-100'
@@ -358,45 +283,45 @@ export const PorterMatrix2D: React.FC = () => {
             >
               {/* SVG Chevron Arrow matching Porter Diagram */}
               <svg
-                className="absolute inset-0 w-full h-full filter drop-shadow-lg transition-transform group-hover:scale-x-105"
+                className="absolute inset-0 w-full h-full filter drop-shadow-md transition-all"
                 viewBox="0 0 100 300"
                 preserveAspectRatio="none"
               >
                 <polygon
                   points="0,0 45,0 100,150 45,300 0,300 50,150"
-                  fill={marginColors.fill}
+                  fill="#0B101D"
                   stroke={marginColors.stroke}
-                  strokeWidth="2"
-                  className="transition-colors"
+                  strokeWidth="1.5"
+                  className="transition-colors group-hover:stroke-blue-400"
                 />
               </svg>
 
               {/* Text & Content Inside Arrow */}
-              <div className="relative z-10 flex flex-col items-center text-center px-1 select-none pointer-events-none">
-                <span className={`text-base sm:text-lg font-black tracking-widest uppercase font-sans ${marginColors.textColor}`}>
-                  M
-                </span>
-                <span className={`text-base sm:text-lg font-black tracking-widest uppercase font-sans ${marginColors.textColor}`}>
-                  A
-                </span>
-                <span className={`text-base sm:text-lg font-black tracking-widest uppercase font-sans ${marginColors.textColor}`}>
-                  R
-                </span>
-                <span className={`text-base sm:text-lg font-black tracking-widest uppercase font-sans ${marginColors.textColor}`}>
-                  G
-                </span>
-                <span className={`text-base sm:text-lg font-black tracking-widest uppercase font-sans ${marginColors.textColor}`}>
-                  E
-                </span>
-                <span className={`text-base sm:text-lg font-black tracking-widest uppercase font-sans ${marginColors.textColor}`}>
-                  N
+              <div className="relative z-10 flex flex-col items-center text-center px-2 select-none pointer-events-none">
+                <span className={`font-mono text-xs font-bold tracking-widest uppercase ${marginColors.headerColor}`}>
+                  Margen
                 </span>
 
-                <div className={`mt-3 px-2 py-1 rounded text-[11px] font-mono font-bold shadow ${marginColors.badgeBg}`}>
-                  {simResult.systemicMarginPct}%
+                <div className="mt-4 text-center">
+                  <div className="text-2xl font-bold tracking-tight text-white font-mono">
+                    {simResult.systemicMarginPct}%
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block mt-0.5">
+                    Margen Sistémico
+                  </span>
                 </div>
-                <span className="text-[9px] font-mono text-white/90 mt-1 uppercase font-semibold">
-                  ROI: {marginActivity.kpis[2]?.value || '284%'}
+
+                <div className="mt-4 pt-3 border-t border-slate-800 w-20 text-center">
+                  <div className="text-xs font-mono font-semibold text-emerald-400">
+                    ROI {marginActivity.kpis[2]?.value || '284%'}
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400 block mt-0.5">
+                    Retorno Valor
+                  </span>
+                </div>
+
+                <span className="mt-5 text-[10px] font-mono text-slate-400 group-hover:text-white transition-colors">
+                  Auditar →
                 </span>
               </div>
             </motion.div>
@@ -418,6 +343,17 @@ interface SupportRowProps {
   onSelect: () => void;
 }
 
+// --- SUPPORT ROW CARD (4 Horizontal Stacked Bars) ---
+interface SupportRowProps {
+  activity: ActivityNode;
+  styleMode: PresentationStyle;
+  isSelected: boolean;
+  isHighlighted: boolean;
+  isDimmed: boolean;
+  isFilterMatched: boolean;
+  onSelect: () => void;
+}
+
 const SupportRowCard: React.FC<SupportRowProps> = ({
   activity,
   styleMode,
@@ -427,84 +363,62 @@ const SupportRowCard: React.FC<SupportRowProps> = ({
   isFilterMatched,
   onSelect,
 }) => {
-  // Styles for each mode
-  const getRowStyle = () => {
-    switch (styleMode) {
-      case 'apple':
-        return 'bg-[#FFF1EE] hover:bg-[#FFEAE4] border-red-200/80 text-slate-800 shadow-sm';
-      case 'microsoft':
-        return 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800 shadow-sm';
-      case 'utp_classic':
-        return 'bg-[#FEF08A] hover:bg-[#FDE047] border-amber-400 text-slate-950 shadow-sm';
-      case 'neural':
-      default:
-        return 'bg-[#111827]/80 hover:bg-[#1B2436] border-[#2C374B] text-[#F2F5F8] shadow-md';
-    }
-  };
-
-  const getChipStyle = () => {
-    switch (styleMode) {
-      case 'apple':
-        // Post-it sticky note style from Apple slide
-        return 'bg-[#FEF9C3] text-amber-950 border-amber-300 shadow-sm hover:shadow-md';
-      case 'microsoft':
-        return 'bg-white text-slate-800 border-slate-300 shadow-sm';
-      case 'utp_classic':
-        return 'bg-white text-slate-950 border-black shadow-sm font-medium';
-      case 'neural':
-      default:
-        return 'bg-[#1B2436] text-[#8AB8FF] border-[#2C374B] hover:border-[#1D63FF]';
-    }
-  };
-
   return (
     <motion.div
       whileHover={{ x: 2 }}
       onClick={onSelect}
-      className={`p-2.5 sm:p-3 rounded-xl border transition-all duration-300 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${getRowStyle()} ${
+      className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0B101D] hover:bg-[#0E1526] ${
         isDimmed
-          ? 'opacity-20 grayscale scale-[0.99] pointer-events-none'
-          : isFilterMatched
-          ? 'ring-2 ring-[#387BFF] shadow-[0_0_16px_rgba(56,123,255,0.35)] opacity-100 scale-[1.008]'
+          ? 'opacity-25 grayscale pointer-events-none'
           : isSelected
-          ? 'ring-2 ring-[#1D63FF] shadow-lg scale-[1.005]'
+          ? 'border-blue-500 bg-[#0E1529] shadow-sm'
           : isHighlighted
-          ? 'ring-2 ring-amber-500 shadow-lg'
-          : ''
+          ? 'border-amber-500/70 bg-[#16130B]'
+          : isFilterMatched
+          ? 'border-blue-500/40'
+          : 'border-slate-800'
       }`}
     >
       {/* Title & Code */}
       <div className="sm:w-64 shrink-0">
         <div className="flex items-center gap-1.5 mb-0.5 whitespace-nowrap">
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#1D63FF] text-white whitespace-nowrap inline-block shrink-0">
+          <span className={`font-mono text-xs font-bold shrink-0 ${
+            styleMode === 'apple' ? 'text-amber-400' : 'text-blue-400'
+          }`}>
             {activity.code}
           </span>
-          <span className="text-[10px] font-mono opacity-70 truncate whitespace-nowrap">
+          <span className="text-slate-600">•</span>
+          <span className="text-xs font-mono text-slate-400 truncate whitespace-nowrap">
             {activity.itilStage}
           </span>
         </div>
-        <h4 className="text-xs font-bold leading-tight truncate">
+        <h4 className="text-xs font-semibold text-white leading-tight truncate">
           {activity.name}
         </h4>
       </div>
 
-      {/* Sub-process Chips / Post-its (Apple/UTP style) */}
-      <div className="flex-1 flex flex-wrap items-center gap-1.5">
+      {/* Sub-process Items */}
+      <div className="flex-1 flex flex-wrap items-center gap-2">
         {(activity.subChips || activity.keyProcesses).slice(0, 4).map((chip, i) => (
           <span
             key={i}
-            className={`px-2 py-1 rounded-md text-[11px] font-sans flex items-center gap-1 transition-transform hover:scale-105 border ${getChipStyle()}`}
+            className={`px-2.5 py-1 rounded text-xs transition-all border ${
+              styleMode === 'apple'
+                ? 'bg-[#FEF08A] hover:bg-[#FDE047] text-slate-950 font-medium border-amber-300 shadow-sm hover:scale-[1.02]'
+                : styleMode === 'microsoft'
+                ? 'bg-[#131B2E] text-slate-200 border-slate-700/70 hover:border-slate-600'
+                : 'bg-slate-900/60 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'
+            }`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#1D63FF]/60 shrink-0" />
-            <span className="truncate max-w-[180px]">{chip}</span>
+            <span className="truncate max-w-[200px]">{chip}</span>
           </span>
         ))}
       </div>
 
       {/* Right KPI & Efficiency */}
-      <div className="shrink-0 flex items-center gap-3 text-[11px] font-mono self-end sm:self-auto">
-        <span className="opacity-75">${activity.metrics.budgetUSD}K</span>
-        <span className="font-bold text-[#10B981]">{activity.metrics.efficiencyScore}% Efic.</span>
+      <div className="shrink-0 flex items-center gap-3 text-xs font-mono self-end sm:self-auto">
+        <span className="text-slate-400">${activity.metrics.budgetUSD}K</span>
+        <span className="font-medium text-emerald-400">{activity.metrics.efficiencyScore}% Efic.</span>
       </div>
     </motion.div>
   );
@@ -532,92 +446,83 @@ const PrimaryColumnCard: React.FC<PrimaryColumnProps> = ({
   isFilterMatched,
   onSelect,
 }) => {
-  // Microsoft mode has distinct colors for each of the 5 primary columns
-  const microsoftColumnColors = [
-    { header: 'bg-[#FED7AA] text-orange-950', body: 'bg-[#FFF7ED] border-orange-200' }, // Logística entrada (Peach)
-    { header: 'bg-[#FEF08A] text-yellow-950', body: 'bg-[#FEFCE8] border-yellow-200' }, // Operaciones (Gold)
-    { header: 'bg-[#BAE6FD] text-sky-950', body: 'bg-[#F0F9FF] border-sky-200' }, // Logística salida (Aqua)
-    { header: 'bg-[#99F6E4] text-teal-950', body: 'bg-[#F0FDFA] border-teal-200' }, // Marketing y ventas (Teal)
-    { header: 'bg-[#DDD6FE] text-purple-950', body: 'bg-[#FAF5FF] border-purple-200' }, // Servicio (Purple)
+  const microsoftColumnAccents = [
+    { border: 'border-t-2 border-t-amber-500', headerBg: 'bg-amber-950/20', codeColor: 'text-amber-400' },
+    { border: 'border-t-2 border-t-yellow-400', headerBg: 'bg-yellow-950/20', codeColor: 'text-yellow-400' },
+    { border: 'border-t-2 border-t-sky-400', headerBg: 'bg-sky-950/20', codeColor: 'text-sky-400' },
+    { border: 'border-t-2 border-t-teal-400', headerBg: 'bg-teal-950/20', codeColor: 'text-teal-400' },
+    { border: 'border-t-2 border-t-purple-400', headerBg: 'bg-purple-950/20', codeColor: 'text-purple-400' },
   ];
 
-  const getColumnStyle = () => {
-    switch (styleMode) {
-      case 'apple':
-        return {
-          container: 'bg-[#ECFDF5] hover:bg-[#D1FAE5] border-emerald-200 text-slate-800 shadow-sm',
-          header: 'bg-emerald-600 text-white font-bold',
-          chip: 'bg-[#FEF9C3] text-amber-950 border-amber-300 shadow-sm hover:shadow-md',
-        };
-      case 'microsoft': {
-        const c = microsoftColumnColors[index % microsoftColumnColors.length];
-        return {
-          container: `${c.body} shadow-sm`,
-          header: `${c.header} font-bold`,
-          chip: 'bg-white text-slate-800 border-slate-200 shadow-sm',
-        };
-      }
-      case 'utp_classic':
-        return {
-          container: 'bg-[#FEF08A] hover:bg-[#FDE047] border-amber-400 text-slate-950 shadow-sm',
-          header: 'bg-amber-400 text-slate-950 font-black border-b border-black',
-          chip: 'bg-white text-slate-950 border-black shadow-sm font-medium',
-        };
-      case 'neural':
-      default:
-        return {
-          container: 'bg-[#0D1322] hover:bg-[#1B2436] border-[#2C374B] text-[#F2F5F8] shadow-md',
-          header: 'bg-[#1D63FF] text-white font-bold',
-          chip: 'bg-[#1B2436] text-[#8AB8FF] border-[#2C374B] hover:border-[#1D63FF]',
-        };
-    }
-  };
-
-  const colStyle = getColumnStyle();
+  const msAccent = microsoftColumnAccents[index % microsoftColumnAccents.length];
 
   return (
     <motion.div
-      whileHover={{ y: -3 }}
+      whileHover={{ y: -2 }}
       onClick={onSelect}
-      className={`rounded-xl border transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden ${colStyle.container} ${
+      className={`rounded-xl border transition-all duration-200 cursor-pointer flex flex-col justify-between overflow-hidden bg-[#0B101D] hover:bg-[#0E1526] ${
+        styleMode === 'microsoft' ? msAccent.border : ''
+      } ${
         isDimmed
-          ? 'opacity-20 grayscale scale-[0.98] pointer-events-none'
-          : isFilterMatched
-          ? 'ring-2 ring-[#0284C7] shadow-[0_0_16px_rgba(2,132,199,0.35)] opacity-100 scale-[1.01]'
+          ? 'opacity-25 grayscale pointer-events-none'
           : isSelected
-          ? 'ring-2 ring-[#1D63FF] shadow-lg scale-[1.01]'
+          ? 'border-blue-500 bg-[#0E1529] shadow-sm'
           : isHighlighted
-          ? 'ring-2 ring-amber-500 shadow-lg'
-          : ''
+          ? 'border-amber-500/70 bg-[#16130B]'
+          : isFilterMatched
+          ? 'border-blue-500/40'
+          : 'border-slate-800'
       }`}
     >
       {/* Top Header of Column */}
-      <div className={`p-2.5 text-center text-xs ${colStyle.header}`}>
-        <div className="font-mono text-[10px] font-bold opacity-90 uppercase mb-0.5 whitespace-nowrap tracking-wider">
-          {activity.code}
+      <div className={`p-3 text-left border-b border-slate-800 ${
+        styleMode === 'microsoft'
+          ? msAccent.headerBg
+          : styleMode === 'apple'
+          ? 'bg-[#0E1424]'
+          : 'bg-[#080D19]'
+      }`}>
+        <div className="flex items-center justify-between font-mono text-[11px] mb-1">
+          <span className={`font-bold ${
+            styleMode === 'microsoft'
+              ? msAccent.codeColor
+              : styleMode === 'apple'
+              ? 'text-amber-400'
+              : 'text-blue-400'
+          }`}>
+            {activity.code}
+          </span>
+          <span className="font-medium text-slate-400">
+            {activity.metrics.slaPct}% SLA
+          </span>
         </div>
-        <h4 className="font-bold leading-tight">
-          {activity.name.length > 28 ? activity.name.slice(0, 26) + '...' : activity.name}
+        <h4 className="text-xs font-semibold leading-snug line-clamp-2 min-h-[2.25rem] text-white">
+          {activity.name}
         </h4>
       </div>
 
-      {/* Process chips (Post-its like Apple / bullet items like Microsoft) */}
+      {/* Process list */}
       <div className="p-2.5 space-y-2 flex-1 flex flex-col justify-start">
         {(activity.subChips || activity.keyProcesses).map((chip, i) => (
           <div
             key={i}
-            className={`p-2 rounded-lg text-[11px] font-sans border transition-all hover:scale-105 flex items-start gap-1.5 ${colStyle.chip}`}
+            className={`p-2 rounded text-xs leading-snug border transition-all ${
+              styleMode === 'apple'
+                ? 'bg-[#FEF08A] hover:bg-[#FDE047] text-slate-950 font-medium border-amber-300 shadow-sm hover:scale-[1.01]'
+                : styleMode === 'microsoft'
+                ? 'bg-[#131B2E] text-slate-200 border-slate-700/70 hover:border-slate-600'
+                : 'bg-slate-900/60 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'
+            }`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#1D63FF] shrink-0 mt-1" />
-            <span className="leading-snug">{chip}</span>
+            {chip}
           </div>
         ))}
       </div>
 
-      {/* Footer info: SLA & Efficiency */}
-      <div className="p-2 bg-black/5 dark:bg-black/30 border-t border-black/10 dark:border-white/10 flex items-center justify-between text-[10px] font-mono">
-        <span className="opacity-80">${activity.metrics.budgetUSD}K</span>
-        <span className="font-bold text-[#10B981]">{activity.metrics.efficiencyScore}%</span>
+      {/* Footer info: Budget & Efficiency */}
+      <div className="p-2.5 bg-[#080D19] border-t border-slate-800 flex items-center justify-between text-xs font-mono">
+        <span className="text-slate-400">${activity.metrics.budgetUSD}K</span>
+        <span className="font-medium text-emerald-400">{activity.metrics.efficiencyScore}% Efic.</span>
       </div>
     </motion.div>
   );
