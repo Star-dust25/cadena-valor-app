@@ -16,6 +16,23 @@ import { SECTORS_DATA } from '../data/valueChainData';
 // Debounce timer for slider/metric update toasts to prevent notification spam
 let toastDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+/**
+ * Canonical evaluator for active bottlenecks across the entire application.
+ * Synchronizes 3D nodes, 2D matrix cards, detail drawers, and the analytics dashboard.
+ */
+export const isActivityBottleneck = (activity: ActivityNode): boolean => {
+  if (activity.category === 'margin') return false;
+
+  const budgetRatio = activity.metrics.budgetUSD / Math.max(1, activity.defaultMetrics.budgetUSD);
+
+  return (
+    budgetRatio < 0.70 ||
+    activity.metrics.automationPct < 60 ||
+    activity.metrics.slaPct < 90.0 ||
+    activity.metrics.efficiencyScore < 75
+  );
+};
+
 interface ValueChainStore {
   // State
   activeSector: SectorType;
@@ -46,6 +63,7 @@ interface ValueChainStore {
     metricsUpdate: Partial<Pick<ActivityMetrics, 'budgetUSD' | 'automationPct' | 'slaPct'>>
   ) => void;
   resetSimulation: () => void;
+  autoBalanceSimulation: () => void;
 
   // Selectors / Helpers
   getActiveSectorData: () => SectorData;
@@ -236,6 +254,67 @@ export const useValueChainStore = create<ValueChainStore>((set, get) => ({
     });
   },
 
+  autoBalanceSimulation: () => {
+    const { activeSector, sectorsData } = get();
+    const currentSectorData = sectorsData[activeSector];
+
+    const balancedActivities = currentSectorData.activities.map((act) => {
+      if (act.category === 'margin') return act;
+
+      // Provide optimal budget (108% of base) to guarantee adequate compute & resources
+      const optimalBudget = Math.round(act.defaultMetrics.budgetUSD * 1.08);
+      // Boost automation into autonomous tier (82% - 94%)
+      const optimalAutomation = Math.max(82, Math.min(94, act.defaultMetrics.automationPct + 8));
+      // Secure high-tier SLA (99.6% - 99.95%)
+      const optimalSla = Math.max(99.6, Math.min(99.95, act.defaultMetrics.slaPct + 0.3));
+
+      // Dynamic efficiency calculation with balanced values
+      const budgetRatio = optimalBudget / Math.max(1, act.defaultMetrics.budgetUSD);
+      const automationFactor = optimalAutomation / 100;
+      const slaFactor = (optimalSla - 80) / 19.99;
+
+      const calculatedEfficiency = Math.min(
+        99,
+        Math.max(
+          20,
+          Math.round((0.35 * Math.min(1.2, budgetRatio) + 0.35 * automationFactor + 0.3 * slaFactor) * 100)
+        )
+      );
+
+      const calculatedCostEfficiencyRatio = Number(
+        ((calculatedEfficiency / 100) * (1.1 + (optimalAutomation / 100) * 0.4)).toFixed(2)
+      );
+
+      return {
+        ...act,
+        metrics: {
+          ...act.metrics,
+          budgetUSD: optimalBudget,
+          automationPct: optimalAutomation,
+          slaPct: Number(optimalSla.toFixed(2)),
+          efficiencyScore: calculatedEfficiency,
+          costEfficiencyRatio: calculatedCostEfficiencyRatio,
+        },
+      };
+    });
+
+    set((state) => ({
+      sectorsData: {
+        ...state.sectorsData,
+        [activeSector]: {
+          ...currentSectorData,
+          activities: balancedActivities,
+        },
+      },
+    }));
+
+    toast.success('Cadena de Valor Equilibrada', {
+      id: 'balance-success',
+      description: 'Presupuestos y automatización optimizados: cuellos de botella eliminados y margen maximizado.',
+      duration: 3500,
+    });
+  },
+
   getActiveSectorData: () => {
     const { activeSector, sectorsData } = get();
     return sectorsData[activeSector];
@@ -272,13 +351,7 @@ export const useValueChainStore = create<ValueChainStore>((set, get) => ({
     } else if (filterType === 'support') {
       list = list.filter((a) => a.category === 'support');
     } else if (filterType === 'bottleneck') {
-      list = list.filter(
-        (a) =>
-          a.systemicRole.bottleneckRisk === 'high' ||
-          a.systemicRole.bottleneckRisk === 'critical' ||
-          a.metrics.budgetUSD < a.defaultMetrics.budgetUSD * 0.7 ||
-          a.metrics.automationPct < 60
-      );
+      list = list.filter((a) => isActivityBottleneck(a));
     } else if (filterType === 'critical_itil') {
       list = list.filter(
         (a) =>
@@ -313,27 +386,24 @@ export const useValueChainStore = create<ValueChainStore>((set, get) => ({
       sumSla += act.metrics.slaPct;
       sumEfficiency += act.metrics.efficiencyScore;
 
-      // Check bottleneck condition
-      if (act.metrics.budgetUSD < act.defaultMetrics.budgetUSD * 0.6) {
+      // Check bottleneck condition using unified evaluator
+      if (isActivityBottleneck(act)) {
+        let reason = 'Déficit operativo que genera fricción sistémica en la cadena.';
+        if (act.metrics.budgetUSD < act.defaultMetrics.budgetUSD * 0.7) {
+          reason = `Presupuesto reducido en un ${Math.round((1 - act.metrics.budgetUSD / act.defaultMetrics.budgetUSD) * 100)}% genera retrasos en el flujo de valor.`;
+        } else if (act.metrics.automationPct < 60) {
+          reason = `Nivel de automatización de solo ${act.metrics.automationPct}% crea saturación manual y cola de incidentes.`;
+        } else if (act.metrics.slaPct < 90) {
+          reason = `SLA de ${act.metrics.slaPct}% infringe acuerdos de servicio contractuales con clientes clave.`;
+        } else if (act.metrics.efficiencyScore < 75) {
+          reason = `Eficiencia degradada (${act.metrics.efficiencyScore}%) que impacta negativamente el margen.`;
+        }
+
         activeBottlenecks.push({
           activityId: act.id,
           activityName: act.name,
-          reason: `Presupuesto reducido en un ${Math.round((1 - act.metrics.budgetUSD / act.defaultMetrics.budgetUSD) * 100)}% genera retrasos en el flujo de valor.`,
-          severity: 'high',
-        });
-      } else if (act.metrics.automationPct < 50 && act.category === 'primary') {
-        activeBottlenecks.push({
-          activityId: act.id,
-          activityName: act.name,
-          reason: `Nivel de automatización de solo ${act.metrics.automationPct}% crea saturación manual y cola de incidentes.`,
-          severity: 'medium',
-        });
-      } else if (act.metrics.slaPct < 90) {
-        activeBottlenecks.push({
-          activityId: act.id,
-          activityName: act.name,
-          reason: `SLA de ${act.metrics.slaPct}% infringe acuerdos de servicio contractuales con clientes clave.`,
-          severity: 'critical',
+          reason,
+          severity: act.systemicRole.bottleneckRisk,
         });
       }
     });
@@ -445,13 +515,7 @@ export const useFilteredActivityIds = (): FilterResult => {
     } else if (filterType === 'support') {
       list = list.filter((a) => a.category === 'support');
     } else if (filterType === 'bottleneck') {
-      list = list.filter(
-        (a) =>
-          a.systemicRole.bottleneckRisk === 'high' ||
-          a.systemicRole.bottleneckRisk === 'critical' ||
-          a.metrics.budgetUSD < a.defaultMetrics.budgetUSD * 0.7 ||
-          a.metrics.automationPct < 60
-      );
+      list = list.filter((a) => isActivityBottleneck(a));
     } else if (filterType === 'critical_itil') {
       list = list.filter(
         (a) =>

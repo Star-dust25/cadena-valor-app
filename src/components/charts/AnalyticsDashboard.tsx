@@ -17,11 +17,12 @@ import {
   ComposedChart,
   Line,
 } from 'recharts';
-import { useActiveSectorData, useSimulationResult } from '../../store/useValueChainStore';
+import { useActiveSectorData, useSimulationResult, useValueChainStore } from '../../store/useValueChainStore';
 
 export const AnalyticsDashboard: React.FC = () => {
   const sector = useActiveSectorData();
   const simResult = useSimulationResult();
+  const autoBalanceSimulation = useValueChainStore((s) => s.autoBalanceSimulation);
   const [chartMode, setChartMode] = useState<'composed' | 'bars'>('composed');
 
   // Radar Data: 5 Primary Activities Maturity vs Benchmark
@@ -121,9 +122,20 @@ export const AnalyticsDashboard: React.FC = () => {
 
         {/* Card 4: Bottlenecks */}
         <div className="p-4 rounded-xl bg-[#090D18] border border-slate-800/80 hover:border-slate-700/60 transition-colors flex flex-col justify-between">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
-            Cuellos de Botella
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
+              Cuellos de Botella
+            </span>
+            {simResult.activeBottlenecks.length > 0 && (
+              <button
+                type="button"
+                onClick={autoBalanceSimulation}
+                className="text-[11px] font-mono text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors cursor-pointer"
+              >
+                Auto-Equilibrar
+              </button>
+            )}
+          </div>
           <div className="my-1.5 flex items-baseline gap-2">
             <span
               className={`text-2xl sm:text-3xl font-mono font-bold tracking-tight ${

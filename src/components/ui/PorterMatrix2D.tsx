@@ -9,6 +9,7 @@ import {
   useActiveSectorData,
   useSimulationResult,
   useFilteredActivityIds,
+  isActivityBottleneck,
 } from '../../store/useValueChainStore';
 import type { ActivityNode } from '../../types/valueChain';
 
@@ -363,6 +364,8 @@ const SupportRowCard: React.FC<SupportRowProps> = ({
   isFilterMatched,
   onSelect,
 }) => {
+  const isBottleneck = isActivityBottleneck(activity);
+
   return (
     <motion.div
       whileHover={{ x: 2 }}
@@ -372,6 +375,8 @@ const SupportRowCard: React.FC<SupportRowProps> = ({
           ? 'opacity-25 grayscale pointer-events-none'
           : isSelected
           ? 'border-blue-500 bg-[#0E1529] shadow-sm'
+          : isBottleneck
+          ? 'border-rose-500/70 bg-[#1A0C11] shadow-[0_0_12px_rgba(244,63,94,0.12)]'
           : isHighlighted
           ? 'border-amber-500/70 bg-[#16130B]'
           : isFilterMatched
@@ -418,7 +423,9 @@ const SupportRowCard: React.FC<SupportRowProps> = ({
       {/* Right KPI & Efficiency */}
       <div className="shrink-0 flex items-center gap-3 text-xs font-mono self-end sm:self-auto">
         <span className="text-slate-400">${activity.metrics.budgetUSD}K</span>
-        <span className="font-medium text-emerald-400">{activity.metrics.efficiencyScore}% Efic.</span>
+        <span className={`font-medium ${isBottleneck ? 'text-rose-400' : 'text-emerald-400'}`}>
+          {activity.metrics.efficiencyScore}% Efic.
+        </span>
       </div>
     </motion.div>
   );
@@ -446,6 +453,7 @@ const PrimaryColumnCard: React.FC<PrimaryColumnProps> = ({
   isFilterMatched,
   onSelect,
 }) => {
+  const isBottleneck = isActivityBottleneck(activity);
   const microsoftColumnAccents = [
     { border: 'border-t-2 border-t-amber-500', headerBg: 'bg-amber-950/20', codeColor: 'text-amber-400' },
     { border: 'border-t-2 border-t-yellow-400', headerBg: 'bg-yellow-950/20', codeColor: 'text-yellow-400' },
@@ -467,6 +475,8 @@ const PrimaryColumnCard: React.FC<PrimaryColumnProps> = ({
           ? 'opacity-25 grayscale pointer-events-none'
           : isSelected
           ? 'border-blue-500 bg-[#0E1529] shadow-sm'
+          : isBottleneck
+          ? 'border-rose-500/70 bg-[#1A0C11] shadow-[0_0_12px_rgba(244,63,94,0.12)]'
           : isHighlighted
           ? 'border-amber-500/70 bg-[#16130B]'
           : isFilterMatched
@@ -522,7 +532,9 @@ const PrimaryColumnCard: React.FC<PrimaryColumnProps> = ({
       {/* Footer info: Budget & Efficiency */}
       <div className="p-2.5 bg-[#080D19] border-t border-slate-800 flex items-center justify-between text-xs font-mono">
         <span className="text-slate-400">${activity.metrics.budgetUSD}K</span>
-        <span className="font-medium text-emerald-400">{activity.metrics.efficiencyScore}% Efic.</span>
+        <span className={`font-medium ${isBottleneck ? 'text-rose-400' : 'text-emerald-400'}`}>
+          {activity.metrics.efficiencyScore}% Efic.
+        </span>
       </div>
     </motion.div>
   );

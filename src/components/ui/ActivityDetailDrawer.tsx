@@ -5,6 +5,7 @@ import {
   useValueChainStore,
   useActiveSectorData,
   useSelectedActivity,
+  isActivityBottleneck,
 } from '../../store/useValueChainStore';
 
 export const ActivityDetailDrawer: React.FC = () => {
@@ -74,11 +75,7 @@ export const ActivityDetailDrawer: React.FC = () => {
     return () => backdrop.removeEventListener('wheel', handleWheel);
   }, [activity]);
 
-  const isBottleneck =
-    activity &&
-    (activity.systemicRole.bottleneckRisk === 'critical' ||
-      activity.metrics.budgetUSD < activity.defaultMetrics.budgetUSD * 0.6 ||
-      activity.metrics.automationPct < 50);
+  const isBottleneck = activity ? isActivityBottleneck(activity) : false;
 
   // Handler for simulator inputs
   const handleBudgetChange = (value: number) => {

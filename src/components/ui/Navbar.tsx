@@ -14,6 +14,7 @@ export const Navbar: React.FC = () => {
   const setSearchQuery = useValueChainStore((s) => s.setSearchQuery);
   const setIsSummaryModalOpen = useValueChainStore((s) => s.setIsSummaryModalOpen);
   const resetSimulation = useValueChainStore((s) => s.resetSimulation);
+  const autoBalanceSimulation = useValueChainStore((s) => s.autoBalanceSimulation);
 
   const { isFilteringActive, matchCount } = useFilteredActivityIds();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -193,6 +194,15 @@ export const Navbar: React.FC = () => {
                 {matchCount} {matchCount === 1 ? 'coincidencia' : 'coincidencias'}
               </span>
             )}
+
+            {/* Auto-Balance / Optimize All Button */}
+            <button
+              onClick={autoBalanceSimulation}
+              title="Equilibrar y optimizar todos los eslabones"
+              className="h-10 px-3.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 text-sm font-semibold transition-all whitespace-nowrap active:scale-95"
+            >
+              Equilibrar
+            </button>
 
             {/* Executive Report Button */}
             <button

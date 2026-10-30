@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Float, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import type { ActivityNode } from '../../types/valueChain';
-import { useValueChainStore, useSimulationResult } from '../../store/useValueChainStore';
+import { useValueChainStore, useSimulationResult, isActivityBottleneck } from '../../store/useValueChainStore';
 
 interface Node3DProps {
   activity: ActivityNode;
@@ -22,10 +22,7 @@ export const Node3D: React.FC<Node3DProps> = ({ activity, isDimmed = false }) =>
   const isHovered = hoveredActivityId === activity.id;
   const isMargin = activity.category === 'margin';
   const isSupport = activity.category === 'support';
-  const isBottleneck =
-    activity.systemicRole.bottleneckRisk === 'critical' ||
-    activity.metrics.budgetUSD < activity.defaultMetrics.budgetUSD * 0.6 ||
-    activity.metrics.automationPct < 50;
+  const isBottleneck = isActivityBottleneck(activity);
 
   const [hoveredLocal, setHoveredLocal] = useState(false);
   const simulation = useSimulationResult();
