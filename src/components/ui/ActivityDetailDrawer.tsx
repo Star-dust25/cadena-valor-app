@@ -431,64 +431,6 @@ export const ActivityDetailDrawer: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* Systemic Connections */}
-                  <div className="p-4 rounded-xl bg-[#090D18] border border-slate-800/80 space-y-3">
-                    <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 block">
-                      Eslabones Relacionados en el Flujo
-                    </span>
-
-                    {/* Reinforces */}
-                    <div className="space-y-1.5">
-                      <span className="text-[11px] font-mono text-slate-500 block">
-                        Potencia Directamente (Bucle Reforzador):
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {activity.systemicRole.reinforces.length > 0 ? (
-                          activity.systemicRole.reinforces.map((targetId) => {
-                            const targetNode = sector.activities.find((a) => a.id === targetId);
-                            return (
-                              <button
-                                key={targetId}
-                                onClick={() => selectActivity(targetId)}
-                                className="px-2.5 py-1 rounded-lg bg-[#0D1322] hover:bg-slate-800 border border-slate-800 text-xs font-mono text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors"
-                              >
-                                <span>{targetNode?.code || targetId}</span>
-                                <span className="text-blue-400 font-sans">→</span>
-                              </button>
-                            );
-                          })
-                        ) : (
-                          <span className="text-xs font-mono text-slate-600">Sin enlaces reforzadores salientes</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Depends On */}
-                    <div className="space-y-1.5 pt-2 border-t border-slate-800/60">
-                      <span className="text-[11px] font-mono text-slate-500 block">
-                        Depende Operativamente de:
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {activity.systemicRole.dependsOn.length > 0 ? (
-                          activity.systemicRole.dependsOn.map((depId) => {
-                            const depNode = sector.activities.find((a) => a.id === depId);
-                            return (
-                              <button
-                                key={depId}
-                                onClick={() => selectActivity(depId)}
-                                className="px-2.5 py-1 rounded-lg bg-[#0D1322] hover:bg-slate-800 border border-slate-800 text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors"
-                              >
-                                <span>{depNode?.code || depId}</span>
-                              </button>
-                            );
-                          })
-                        ) : (
-                          <span className="text-xs font-mono text-slate-600">Nodo raíz o independiente</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Bottleneck Risk Analysis */}
                   <div className="p-4 rounded-xl bg-[#090D18] border border-slate-800/80 space-y-2">
                     <div className="flex items-center justify-between">
