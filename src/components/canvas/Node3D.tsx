@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Float, Text } from '@react-three/drei';
 import * as THREE from 'three';
@@ -30,6 +30,13 @@ export const Node3D: React.FC<Node3DProps> = ({ activity, isDimmed = false }) =>
   const [hoveredLocal, setHoveredLocal] = useState(false);
   const simulation = useSimulationResult();
 
+  // Reset body cursor on unmount to prevent cursor stickiness
+  useEffect(() => {
+    return () => {
+      document.body.style.cursor = 'auto';
+    };
+  }, []);
+
   // Chevron shape for the Margin 3D Arrowhead (Clean, sharp, symmetric 2.4-width arrow)
   const chevronShape = useMemo(() => {
     const s = new THREE.Shape();
@@ -59,7 +66,7 @@ export const Node3D: React.FC<Node3DProps> = ({ activity, isDimmed = false }) =>
   // Support: Deep Indigo / Lavender
   // Primary: Deep Navy / Electric Sky Blue
   // Margin: Deep Bronze / Golden Amber
-  let baseColor = isSupport ? '#151D33' : isMargin ? '#24180A' : '#0B1D3A';
+  const baseColor = isSupport ? '#151D33' : isMargin ? '#24180A' : '#0B1D3A';
   let emissiveColor = isSupport ? '#818CF8' : isMargin ? '#F59E0B' : '#38BDF8';
   let emissiveIntensity = isMargin ? 0.45 : isSelected ? 0.65 : isHovered || hoveredLocal ? 0.45 : 0.15;
 

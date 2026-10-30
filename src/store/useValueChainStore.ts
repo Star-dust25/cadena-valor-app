@@ -295,7 +295,6 @@ export const useValueChainStore = create<ValueChainStore>((set, get) => ({
     const activities = sector.activities;
 
     let totalBudget = 0;
-    let defaultTotalBudget = 0;
     let sumAutomation = 0;
     let sumSla = 0;
     let sumEfficiency = 0;
@@ -308,7 +307,6 @@ export const useValueChainStore = create<ValueChainStore>((set, get) => ({
 
     activities.forEach((act) => {
       totalBudget += act.metrics.budgetUSD;
-      defaultTotalBudget += act.defaultMetrics.budgetUSD;
       sumAutomation += act.metrics.automationPct;
       sumSla += act.metrics.slaPct;
       sumEfficiency += act.metrics.efficiencyScore;
@@ -392,6 +390,7 @@ export const useSimulationResult = (): SimulationResult => {
   const calculateSimulationResult = useValueChainStore((s) => s.calculateSimulationResult);
 
   return useMemo(() => {
+    void sector;
     return calculateSimulationResult();
   }, [sector, calculateSimulationResult]);
 };

@@ -383,14 +383,14 @@ export const AnalyticsDashboard: React.FC = () => {
                   unit="%"
                 />
                 <Tooltip
-                  formatter={(value: any, name: any) => {
-                    if (name === 'Presupuesto ($K)') return [`$${Number(value).toLocaleString()}K USD`, 'Presupuesto'];
-                    if (name === 'Eficiencia (%)') return [`${value}%`, 'Eficiencia'];
-                    return [value, name];
+                  formatter={(value: unknown, name: unknown) => {
+                    if (String(name) === 'Presupuesto ($K)') return [`$${Number(value).toLocaleString()}K USD`, 'Presupuesto'];
+                    if (String(name) === 'Eficiencia (%)') return [`${String(value)}%`, 'Eficiencia'];
+                    return [String(value), String(name)];
                   }}
-                  labelFormatter={(label: any) => {
-                    const item = barData.find((b) => b.name === label);
-                    return item ? `${item.name} — ${item.fullName}` : label;
+                  labelFormatter={(label: unknown) => {
+                    const item = barData.find((b) => b.name === String(label));
+                    return item ? `${item.name} — ${item.fullName}` : String(label);
                   }}
                   contentStyle={{
                     backgroundColor: '#090D18',
@@ -454,14 +454,14 @@ export const AnalyticsDashboard: React.FC = () => {
                   unit="%"
                 />
                 <Tooltip
-                  formatter={(value: any, name: any) => {
-                    if (name === 'Presupuesto ($K)') return [`$${Number(value).toLocaleString()}K USD`, 'Presupuesto'];
-                    if (name === 'Eficiencia (%)') return [`${value}%`, 'Eficiencia'];
-                    return [value, name];
+                  formatter={(value: unknown, name: unknown) => {
+                    if (String(name) === 'Presupuesto ($K)') return [`$${Number(value).toLocaleString()}K USD`, 'Presupuesto'];
+                    if (String(name) === 'Eficiencia (%)') return [`${String(value)}%`, 'Eficiencia'];
+                    return [String(value), String(name)];
                   }}
-                  labelFormatter={(label: any) => {
-                    const item = barData.find((b) => b.name === label);
-                    return item ? `${item.name} — ${item.fullName}` : label;
+                  labelFormatter={(label: unknown) => {
+                    const item = barData.find((b) => b.name === String(label));
+                    return item ? `${item.name} — ${item.fullName}` : String(label);
                   }}
                   contentStyle={{
                     backgroundColor: '#090D18',

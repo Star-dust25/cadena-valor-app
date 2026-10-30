@@ -158,10 +158,12 @@ export const Connections3D: React.FC<Connections3DProps> = ({ activities }) => {
   const p1Ref = useRef<THREE.Mesh>(null);
   const p2Ref = useRef<THREE.Mesh>(null);
   const pFeedbackRef = useRef<THREE.Mesh>(null);
+  const accumulatedTimeRef = useRef(0);
 
   // Animate pulses exclusively in the gaps
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
+  useFrame((_, delta) => {
+    accumulatedTimeRef.current += delta;
+    const t = accumulatedTimeRef.current;
 
     // Feedback curve pulse
     if (feedbackLoop && pFeedbackRef.current) {
