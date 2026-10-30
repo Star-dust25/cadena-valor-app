@@ -13,6 +13,9 @@ import type {
 } from '../types/valueChain';
 import { SECTORS_DATA } from '../data/valueChainData';
 
+// Debounce timer for slider/metric update toasts to prevent notification spam
+let toastDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 interface ValueChainStore {
   // State
   activeSector: SectorType;
@@ -128,30 +131,14 @@ export const useValueChainStore = create<ValueChainStore>((set, get) => ({
     const activity = currentSectorData.activities[activityIndex];
     const currentMetrics = activity.metrics;
 
-    // Strict Validations
+    // Strict Validations (silent clamping to avoid continuous alert spam while typing or dragging)
     let newBudget = metricsUpdate.budgetUSD !== undefined ? metricsUpdate.budgetUSD : currentMetrics.budgetUSD;
     let newAutomation = metricsUpdate.automationPct !== undefined ? metricsUpdate.automationPct : currentMetrics.automationPct;
     let newSla = metricsUpdate.slaPct !== undefined ? metricsUpdate.slaPct : currentMetrics.slaPct;
 
-    // Validate budget
-    if (newBudget < 0) {
-      toast.error('Validación de Presupuesto', {
-        description: 'El presupuesto asignado no puede ser un valor negativo.',
-      });
-      newBudget = 0;
-    }
-
-    // Validate SLA: must be between 80.00% and 99.99%
-    if (newSla < 80.0) {
-      toast.warning('Validación de SLA / Disponibilidad', {
-        description: 'El SLA mínimo admisible por contrato en ITIL 4 es del 80.00%.',
-      });
-      newSla = 80.0;
-    } else if (newSla > 99.99) {
-      newSla = 99.99;
-    }
-
-    // Validate Automation: between 0% and 100%
+    if (newBudget < 0) newBudget = 0;
+    if (newSla < 80.0) newSla = 80.0;
+    if (newSla > 99.99) newSla = 99.99;
     if (newAutomation < 0) newAutomation = 0;
     if (newAutomation > 100) newAutomation = 100;
 
@@ -198,23 +185,38 @@ export const useValueChainStore = create<ValueChainStore>((set, get) => ({
     set({ sectorsData: newSectorsData });
 
     // Systemic bottleneck alert evaluation
-    const defaultBudget = activity.defaultMetrics.budgetUSD;
-    if (newBudget < defaultBudget * 0.55 && activity.category !== 'margin') {
-      toast.warning(`⚠️ Cuello de Botella Sistémico en: ${activity.name}`, {
-        description: `Presupuesto reducido a $${newBudget}K USD. Se generarán demoras aguas abajo afectando el Margen de Valor.`,
-        duration: 4000,
-      });
-    } else if (newAutomation < 45 && activity.category === 'primary') {
-      toast.warning(`⚠️ Alerta de Rendimiento: ${activity.name}`, {
-        description: `Automatización baja (${newAutomation}%). Riesgo de sobrecarga manual y degradación de SLAs.`,
-        duration: 3500,
-      });
-    } else if (calculatedEfficiency >= 94) {
-      toast.success(`✨ Actividad Optimizada: ${activity.code}`, {
-        description: `Alta eficiencia (${calculatedEfficiency}%) impulsa el margen sistémico proyectado.`,
-        duration: 3000,
-      });
+    // Debounced with stable `id` so Sonner updates in-place instead of stacking multiple toasts
+    if (toastDebounceTimer) {
+      clearTimeout(toastDebounceTimer);
     }
+
+    toastDebounceTimer = setTimeout(() => {
+      const defaultBudget = activity.defaultMetrics.budgetUSD;
+      const toastId = `activity-status-${activity.id}`;
+
+      if (newBudget < defaultBudget * 0.55 && activity.category !== 'margin') {
+        toast.warning(`⚠️ Cuello de Botella: ${activity.name}`, {
+          id: toastId,
+          description: `Presupuesto reducido a $${Math.round(newBudget)}K USD. Riesgo de fricción sistémica en la cadena.`,
+          duration: 3500,
+        });
+      } else if (newAutomation < 45 && activity.category === 'primary') {
+        toast.warning(`⚠️ Alerta de Rendimiento: ${activity.name}`, {
+          id: toastId,
+          description: `Automatización baja (${Math.round(newAutomation)}%). Riesgo de sobrecarga manual.`,
+          duration: 3500,
+        });
+      } else if (calculatedEfficiency >= 94) {
+        toast.success(`✨ Actividad Optimizada: ${activity.code}`, {
+          id: toastId,
+          description: `Alta eficiencia (${calculatedEfficiency}%) impulsa el margen proyectado.`,
+          duration: 3000,
+        });
+      } else {
+        // Dismiss alert if activity returned to nominal healthy state
+        toast.dismiss(toastId);
+      }
+    }, 450);
   },
 
   resetSimulation: () => {

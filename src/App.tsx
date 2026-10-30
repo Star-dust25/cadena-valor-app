@@ -21,6 +21,8 @@ export const App: React.FC = () => {
         theme="dark"
         richColors
         closeButton
+        visibleToasts={2}
+        duration={3000}
         toastOptions={{
           style: {
             background: '#0D1322',
