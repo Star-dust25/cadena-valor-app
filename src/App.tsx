@@ -132,25 +132,29 @@ export const App: React.FC = () => {
       {/* Academic Executive Summary Report Modal */}
       <ExecutiveSummaryModal />
 
-      {/* Footer */}
-      <footer className="mt-16 border-t border-[#8FA0B5]/15 bg-[#050508] py-8 text-xs text-[#8FA0B5]">
+      {/* Minimalist Enterprise Footer */}
+      <footer className="mt-20 border-t border-slate-800/80 bg-[#060913] py-6 text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 font-mono">
-            <span className="text-[#8AB8FF] font-bold">GSTI</span>
-            <span>•</span>
-            <span>Gestión del Servicio de TI</span>
-            <span>•</span>
-            <span>Caso Práctico 02</span>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 font-mono text-xs">
+            <span className="font-semibold text-white">GSTI</span>
+            <span className="text-slate-700">/</span>
+            <span className="text-slate-300">Gestión del Servicio de TI</span>
+            <span className="text-slate-700">·</span>
+            <span className="text-slate-500">Caso Práctico 02</span>
           </div>
 
-          <div className="text-center font-mono text-[11px] text-[#8FA0B5]/80">
-            Cadena de Valor Michael Porter • ITIL v4 Service Value Chain • Dinámica de Sistemas Peter Senge
+          <div className="text-center font-mono text-[11px] text-slate-500">
+            Cadena de Valor Michael Porter · ITIL 4 SVC · Dinámica de Sistemas (Peter Senge)
           </div>
 
-          <div className="flex items-center gap-4 font-mono text-[11px]">
-            <span className="text-[#1D63FF]">React 19 + Three.js</span>
-            <span className="text-[#387BFF]">Zustand</span>
-            <span className="text-[#8AB8FF]">Recharts</span>
+          <div className="flex items-center gap-3 font-mono text-[11px] text-slate-500">
+            <span>React 19</span>
+            <span className="text-slate-700">·</span>
+            <span>Three.js</span>
+            <span className="text-slate-700">·</span>
+            <span>Zustand</span>
+            <span className="text-slate-700">·</span>
+            <span>Recharts</span>
           </div>
         </div>
       </footer>

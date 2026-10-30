@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ResponsiveContainer,
   RadarChart,
@@ -14,12 +14,15 @@ import {
   CartesianGrid,
   BarChart,
   Bar,
+  ComposedChart,
+  Line,
 } from 'recharts';
 import { useActiveSectorData, useSimulationResult } from '../../store/useValueChainStore';
 
 export const AnalyticsDashboard: React.FC = () => {
   const sector = useActiveSectorData();
   const simResult = useSimulationResult();
+  const [chartMode, setChartMode] = useState<'composed' | 'bars'>('composed');
 
   // Radar Data: 5 Primary Activities Maturity vs Benchmark
   const radarData = useMemo(() => {
@@ -285,27 +288,62 @@ export const AnalyticsDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. CHART 3: BarChart - Presupuesto vs Eficiencia por Eslabón */}
+      {/* 3. CHART 3: Resource Distribution & Efficiency (Minimalist Composed / Slender Bars) */}
       <div className="p-5 rounded-2xl bg-[#090D18] border border-slate-800/80 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
           <div>
-            <span className="font-mono text-xs uppercase tracking-wider text-slate-400">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-slate-400">
               Distribución de Recursos
             </span>
             <h3 className="text-sm font-semibold text-white mt-0.5">
-              Presupuesto Asignado ($K USD) vs Eficiencia por Actividad
+              Presupuesto Asignado vs Eficiencia por Actividad
             </h3>
           </div>
-          <div className="flex items-center gap-4 text-xs font-mono">
-            <span className="flex items-center gap-1.5 text-slate-300">
-              <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
-              Presupuesto ($K)
-            </span>
-            <span className="flex items-center gap-1.5 text-emerald-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-              Eficiencia (%)
-            </span>
-            <span className="text-slate-500 border-l border-slate-800 pl-3">
+
+          <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+            {/* View Switcher: Combinado vs Barras */}
+            <div className="flex items-center rounded-lg bg-slate-900/90 p-0.5 border border-slate-800 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setChartMode('composed')}
+                className={`px-2.5 py-0.5 rounded-md transition-all ${
+                  chartMode === 'composed'
+                    ? 'bg-slate-800 text-white font-medium shadow-sm'
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                Combinado
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartMode('bars')}
+                className={`px-2.5 py-0.5 rounded-md transition-all ${
+                  chartMode === 'bars'
+                    ? 'bg-slate-800 text-white font-medium shadow-sm'
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                Barras
+              </button>
+            </div>
+
+            {/* Micro Legend */}
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 text-slate-300">
+                <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
+                Presupuesto ($K)
+              </span>
+              <span className="flex items-center gap-1.5 text-emerald-400">
+                {chartMode === 'composed' ? (
+                  <span className="w-3 h-0.5 bg-emerald-500 inline-block" />
+                ) : (
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                )}
+                Eficiencia (%)
+              </span>
+            </div>
+
+            <span className="text-slate-500 border-l border-slate-800 pl-3 hidden md:inline">
               Total: <strong className="text-white">${simResult.totalBudgetUSD.toLocaleString()}K USD</strong>
             </span>
           </div>
@@ -313,35 +351,148 @@ export const AnalyticsDashboard: React.FC = () => {
 
         <div className="h-64 sm:h-72 w-full min-h-[260px] min-w-0">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={barData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" vertical={false} opacity={0.5} />
-              <XAxis dataKey="name" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: '#1E293B' }} />
-              <YAxis yAxisId="left" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: '#1E293B' }} />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                stroke="#10B981"
-                fontSize={11}
-                tickLine={false}
-                axisLine={{ stroke: '#1E293B' }}
-                domain={[0, 100]}
-                unit="%"
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#090D18',
-                  borderColor: '#1E293B',
-                  borderRadius: '0.5rem',
-                  color: '#F8FAFC',
-                  fontSize: '12px',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.6)',
-                }}
-                itemStyle={{ color: '#E2E8F0', fontSize: '11px', fontFamily: 'monospace' }}
-                labelStyle={{ color: '#94A3B8', fontSize: '11px', fontFamily: 'monospace', fontWeight: 600 }}
-              />
-              <Bar yAxisId="left" dataKey="presupuesto" name="Presupuesto ($K)" fill="#3B82F6" radius={[4, 4, 0, 0]} maxBarSize={28} />
-              <Bar yAxisId="right" dataKey="eficiencia" name="Eficiencia (%)" fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={28} />
-            </BarChart>
+            {chartMode === 'composed' ? (
+              <ComposedChart data={barData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" vertical={false} opacity={0.4} />
+                <XAxis
+                  dataKey="name"
+                  stroke="#64748B"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={{ stroke: '#1E293B' }}
+                  tick={{ fill: '#94A3B8', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}
+                />
+                <YAxis
+                  yAxisId="left"
+                  stroke="#64748B"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: '#64748B', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}
+                  tickFormatter={(v) => `$${v}`}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke="#64748B"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: '#64748B', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}
+                  domain={[0, 100]}
+                  unit="%"
+                />
+                <Tooltip
+                  formatter={(value: any, name: any) => {
+                    if (name === 'Presupuesto ($K)') return [`$${Number(value).toLocaleString()}K USD`, 'Presupuesto'];
+                    if (name === 'Eficiencia (%)') return [`${value}%`, 'Eficiencia'];
+                    return [value, name];
+                  }}
+                  labelFormatter={(label: any) => {
+                    const item = barData.find((b) => b.name === label);
+                    return item ? `${item.name} — ${item.fullName}` : label;
+                  }}
+                  contentStyle={{
+                    backgroundColor: '#090D18',
+                    borderColor: '#1E293B',
+                    borderRadius: '0.5rem',
+                    color: '#F8FAFC',
+                    fontSize: '11px',
+                    fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.6)',
+                  }}
+                />
+                <Bar
+                  yAxisId="left"
+                  dataKey="presupuesto"
+                  name="Presupuesto ($K)"
+                  fill="#3B82F6"
+                  fillOpacity={0.7}
+                  radius={[3, 3, 0, 0]}
+                  maxBarSize={18}
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="eficiencia"
+                  name="Eficiencia (%)"
+                  stroke="#10B981"
+                  strokeWidth={2}
+                  dot={{ r: 3.5, fill: '#10B981', stroke: '#090D18', strokeWidth: 1.5 }}
+                  activeDot={{ r: 5, fill: '#34D399' }}
+                />
+              </ComposedChart>
+            ) : (
+              <BarChart data={barData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }} barGap={3}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" vertical={false} opacity={0.4} />
+                <XAxis
+                  dataKey="name"
+                  stroke="#64748B"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={{ stroke: '#1E293B' }}
+                  tick={{ fill: '#94A3B8', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}
+                />
+                <YAxis
+                  yAxisId="left"
+                  stroke="#64748B"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: '#64748B', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}
+                  tickFormatter={(v) => `$${v}`}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke="#64748B"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: '#64748B', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}
+                  domain={[0, 100]}
+                  unit="%"
+                />
+                <Tooltip
+                  formatter={(value: any, name: any) => {
+                    if (name === 'Presupuesto ($K)') return [`$${Number(value).toLocaleString()}K USD`, 'Presupuesto'];
+                    if (name === 'Eficiencia (%)') return [`${value}%`, 'Eficiencia'];
+                    return [value, name];
+                  }}
+                  labelFormatter={(label: any) => {
+                    const item = barData.find((b) => b.name === label);
+                    return item ? `${item.name} — ${item.fullName}` : label;
+                  }}
+                  contentStyle={{
+                    backgroundColor: '#090D18',
+                    borderColor: '#1E293B',
+                    borderRadius: '0.5rem',
+                    color: '#F8FAFC',
+                    fontSize: '11px',
+                    fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.6)',
+                  }}
+                />
+                <Bar
+                  yAxisId="left"
+                  dataKey="presupuesto"
+                  name="Presupuesto ($K)"
+                  fill="#3B82F6"
+                  fillOpacity={0.8}
+                  radius={[2, 2, 0, 0]}
+                  maxBarSize={12}
+                />
+                <Bar
+                  yAxisId="right"
+                  dataKey="eficiencia"
+                  name="Eficiencia (%)"
+                  fill="#10B981"
+                  fillOpacity={0.8}
+                  radius={[2, 2, 0, 0]}
+                  maxBarSize={12}
+                />
+              </BarChart>
+            )}
           </ResponsiveContainer>
         </div>
       </div>
